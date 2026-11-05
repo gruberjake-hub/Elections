@@ -51,6 +51,21 @@
   .btn.bad{background:var(--bad)}
   .btn.small{padding:9px 12px;font-size:13px;width:auto}
   .btn:disabled{opacity:.5;cursor:not-allowed}
+  /* ---- Team chat zone: visually separate from the record-keeping cards ---- */
+  .zone-divider{display:flex;align-items:center;gap:10px;margin:30px 2px 12px;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.8px;font-weight:600}
+  .zone-divider::before,.zone-divider::after{content:"";flex:1;height:1px;background:var(--line)}
+  .chat-zone{border:1px dashed #3a4a6e;border-radius:var(--radius);padding:14px;margin-bottom:20px;background:rgba(42,171,238,.05)}
+  .chat-tiles{display:flex;flex-direction:column;gap:10px}
+  .chat-tile{display:flex;align-items:center;gap:12px;min-height:60px;padding:10px 14px;border-radius:12px;
+    background:#16263a;border:1px solid #2b4a6b;color:var(--ink);text-decoration:none;-webkit-tap-highlight-color:transparent}
+  .chat-tile:active{background:#1c3250}
+  .chat-ic{flex:0 0 40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#2aabee;color:#fff}
+  .chat-ic svg{margin-left:-2px;margin-top:1px}
+  .chat-txt{flex:1;display:flex;flex-direction:column;line-height:1.2}
+  .chat-title{font-size:16px;font-weight:650}
+  .chat-sub{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .chat-go{font-size:26px;color:var(--muted);line-height:1}
+  .chat-note{font-size:12.5px;color:var(--muted);margin:12px 2px 0;line-height:1.45}
   .pill{display:inline-block;font-size:11px;padding:3px 8px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--muted);margin:0 4px 4px 0}
   .entry{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
   .entry .top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
@@ -130,11 +145,6 @@
       <p class="hint" id="submitHint">Pushes your new observations to the shared team record. They stay on your phone too.</p>
     </div>
     <div class="card">
-      <h2>💬 Team chat</h2>
-      <a class="btn" id="teamChatBtn" href="#" target="_blank" rel="noopener" onclick="return openTeamChat(event)" style="text-decoration:none">Open team chat (Telegram)</a>
-      <p class="hint">Messages in the team chat are kept as team records. Saw something firsthand? Post it there if you like — <b>and log it here too</b>. The app entry is what goes in a complaint.</p>
-    </div>
-    <div class="card">
       <h2>Your notes (backup)</h2>
       <div class="row">
         <button class="btn ghost small" onclick="exportNotes()">⬇ Export notes (JSON)</button>
@@ -142,6 +152,27 @@
       </div>
       <input id="importFile" type="file" accept="application/json" style="display:none" onchange="importNotes(event)">
       <p class="hint">A local backup file, in case you want to hand your full record over directly. Everything is also saved on this device automatically.</p>
+    </div>
+
+    <!-- ===== TEAM CHAT — deliberately its own zone, below the record-keeping
+         cards. One tile per platform; adding Discord later = one more <a
+         class="chat-tile"> in .chat-tiles (same shape, its own icon + label). -->
+    <div class="zone-divider"><span>Talk with the team</span></div>
+    <div class="chat-zone">
+      <div class="chat-tiles">
+        <a class="chat-tile" id="teamChatBtn" href="#" target="_blank" rel="noopener" onclick="return openTeamChat(event)">
+          <span class="chat-ic" aria-hidden="true">
+            <!-- generic paper-plane glyph -->
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
+          </span>
+          <span class="chat-txt">
+            <span class="chat-title">Open team chat</span>
+            <span class="chat-sub">in Telegram</span>
+          </span>
+          <span class="chat-go" aria-hidden="true">›</span>
+        </a>
+      </div>
+      <p class="chat-note">Chat is kept as a team record. Saw something firsthand? Post it if you like — <b>and log it above too</b>. The app entry is what goes in a complaint.</p>
     </div>
   </section>
 
