@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Milwaukee Central Count — Observer Field Handout — Nov 3, 2026</title>
+<style>
+  :root{
+    --ink:#1b1f24; --muted:#5b6470; --line:#d7dce2; --bg:#f6f7f9; --card:#ffffff;
+    --accent:#1f4e79; --accent-soft:#e8eff7; --warn:#8a3b00; --warn-soft:#fff3e6;
+    --stop:#8b1d1d; --stop-soft:#fdecec; --ok:#1e5b33; --ok-soft:#e9f5ec;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.45}
+  .page{max-width:960px;margin:0 auto;padding:24px 20px 48px}
+  header.top{background:var(--accent);color:#fff;border-radius:10px;padding:18px 22px;margin-bottom:16px}
+  header.top h1{margin:0 0 4px;font-size:22px;letter-spacing:.2px}
+  header.top .sub{opacity:.9;font-size:13px}
+  header.top .meta{font-family:var(--mono);font-size:11.5px;opacity:.85;margin-top:8px}
+  h2{font-size:16px;margin:0 0 10px;color:var(--accent);border-bottom:2px solid var(--accent-soft);padding-bottom:6px}
+  h3{font-size:14px;margin:14px 0 6px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:0 0 14px;break-inside:avoid}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .grid .card{margin:0}
+  @media screen and (max-width:760px){.grid{grid-template-columns:1fr}}
+  ul,ol{margin:6px 0 6px 20px;padding:0}
+  li{margin:3px 0}
+  .kv{display:grid;grid-template-columns:150px 1fr;gap:4px 12px;font-size:13.5px}
+  .kv div:nth-child(odd){color:var(--muted);font-weight:600}
+  .callout{border-left:4px solid var(--accent);background:var(--accent-soft);padding:10px 12px;border-radius:6px;margin:8px 0}
+  .callout.warn{border-color:var(--warn);background:var(--warn-soft)}
+  .callout.stop{border-color:var(--stop);background:var(--stop-soft)}
+  .callout.ok{border-color:var(--ok);background:var(--ok-soft)}
+  .tag{display:inline-block;font-family:var(--mono);font-size:10.5px;font-weight:700;padding:0 5px;border-radius:4px;border:1px solid;vertical-align:1px;margin-left:3px;white-space:nowrap}
+  .tD{color:#1f4e79;border-color:#9db7d3;background:#eef4fa}
+  .tI{color:#6b4a00;border-color:#d9c08a;background:#fbf5e6}
+  .tT{color:#3d5a2c;border-color:#a9c49a;background:#f0f7ec}
+  .tN{color:#5a3d6b;border-color:#c3a9d3;background:#f6f0fa}
+  .cite{font-family:var(--mono);font-size:11.5px;color:var(--muted);white-space:nowrap}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+  th{background:var(--accent-soft);color:var(--accent);font-size:12px;text-transform:uppercase;letter-spacing:.3px}
+  .do li::marker{content:"✓  ";color:var(--ok)}
+  .dont li::marker{content:"✗  ";color:var(--stop)}
+  .check li{list-style:none;margin-left:-18px}
+  .check li::before{content:"☐ ";font-size:15px;color:var(--accent)}
+  .fill{display:inline-block;min-width:180px;border-bottom:1px solid var(--ink);height:1.1em}
+  .small{font-size:12px;color:var(--muted)}
+  .legend span{margin-right:12px}
+  .log td{height:30px}
+  footer{font-size:11.5px;color:var(--muted);margin-top:18px}
+  footer ol{margin-left:18px}
+  .pb{break-before:page}
+  @media print{
+    @page{size:letter;margin:0.5in}
+    html,body{background:#fff;font-size:11.5px}
+    .page{padding:0;max-width:none}
+    .card{border-color:#bbb;padding:10px 12px;margin-bottom:10px}
+    .card{break-inside:auto}
+    tr,li,.callout{break-inside:avoid}
+    h2,h3{break-after:avoid}
+    .grid{display:block}
+    .grid .card{margin-bottom:10px}
+    .kv{grid-template-columns:120px 1fr}
+    header.top{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .callout,.tag,th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .noprint{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="top">
+  <h1>Milwaukee Central Count — Observer Field Handout</h1>
+  <div class="sub">General Election · Tuesday, November 3, 2026 · Absentee ballot canvass (Wis. Stat. § 7.52) · Observer rule: Wis. Admin. Code ch. EL 4</div>
+  <div class="meta">Version 2026-10-29 · Prepared for the team’s observers · Not legal advice. When this sheet and an official’s lawful instruction conflict, comply and document.</div>
+</header>
+
+<div class="card legend small">
+  <strong>How to read the tags:</strong>
+  <span><span class="tag tD">LAW</span> statute or EL 4 text</span>
+  <span><span class="tag tI">APPLIED</span> our reading of how the law applies here</span>
+  <span><span class="tag tT">TEAM</span> team field practice (not law)</span>
+  <span><span class="tag tN">REPORTED</span> official statement or news report, not law</span>
+</div>
+
+<!-- ============ PAGE 1: ESSENTIALS ============ -->
+<div class="grid">
+  <div class="card">
+    <h2>Where &amp; when</h2>
+    <div class="kv">
+      <div>Location</div><div><strong>Italian Community Center, 631 E. Chicago St., Milwaukee 53202</strong> (Third Ward). <strong>New site:</strong> this is the first time Central Count has been held here. It is <em>not</em> the S. Kinnickinnic operations center used in earlier elections. <span class="tag tN">REPORTED</span></div>
+      <div>Opens</div><div>7:00 a.m. Envelopes may not be opened before the polls open. <span class="tag tN">REPORTED</span></div>
+      <div>Ballot drop-off</div><div>Voters may hand absentee ballots in at Central Count from 7 a.m. to 8 p.m. City drop boxes close after the last pickup at 6 p.m. <span class="tag tN">REPORTED</span></div>
+      <div>Hard cutoff</div><div><strong>8:00 p.m.</strong> A ballot that arrives after 8 p.m. may not be counted. <span class="cite">§ 6.87(6)</span> <span class="tag tD">LAW</span></div>
+      <div>End</div><div>The count must run without adjournment until every absentee ballot is canvassed and the return statement is done. <span class="cite">§ 7.51(1)</span> <span class="tag tD">LAW</span> Shifts can run about 15 hours. <span class="tag tN">REPORTED</span></div>
+      <div>Results</div><div>Results go out on data sticks. The bipartisan Board of Election Commissioners carries them to the Milwaukee County Election Commission under police escort. <span class="tag tN">REPORTED</span></div>
+      <div>Parking</div><div>Ask your team lead. Older team guidance (street parking) was written for the previous site. <span class="tag tT">TEAM</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Contacts</h2>
+    <div class="kv">
+      <div>Team lead</div><div><span class="fill"></span></div>
+      <div>Lead phone</div><div><span class="fill"></span></div>
+      <div>Team hotline</div><div>(608) 699-6950 (call or text). This number comes from team materials; confirm it before Tuesday. <span class="tag tT">TEAM</span></div>
+      <div>On-site officials</div><div>Seven chief inspectors will be on the floor to answer questions. Ask at check-in which one is your contact. <span class="tag tN">REPORTED</span></div>
+      <div>MEC</div><div>414-286-VOTE (8683)</div>
+      <div>WEC help desk</div><div>608-261-2028 · elections@wi.gov</div>
+      <div>My arrival</div><div><span class="fill"></span></div>
+      <div>My departure</div><div><span class="fill"></span></div>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:14px">
+  <h2>The five things that matter most</h2>
+  <ol>
+    <li><strong>Watch and write. Don’t argue.</strong> Your job is a precise, time-stamped record. Whether something was a violation gets decided later, from your notes. Record what you saw, not what you concluded. <span class="tag tT">TEAM</span></li>
+    <li><strong>Talk only to the designated election official</strong> or the officials named for you at check-in. Don’t talk to workers at the tables. <span class="cite">EL 4.04(4), (14)</span> <span class="tag tD">LAW</span></li>
+    <li><strong>Hands off.</strong> Never touch a ballot, envelope, container, return, or machine. <span class="cite">§ 5.87(1); EL 4.03(9)</span> <span class="tag tD">LAW</span></li>
+    <li><strong>Photos are allowed at central count, with three exceptions:</strong> no passwords or log-ins, no confidential information (voted ballots, dates of birth, ID numbers), and no voters dropping off or fixing a ballot. <span class="cite">EL 4.05(6)(b), 4.03(10), 4.05(3)(b)</span> <span class="tag tD">LAW</span> <span class="tag tI">APPLIED</span></li>
+    <li><strong>Anything major: find your team lead right away.</strong> That includes ballots accepted after 8 p.m., single-party teams handling ballots, broken or missing seals, or a results export that looks wrong. <span class="tag tT">TEAM</span></li>
+  </ol>
+</div>
+
+<!-- ============ CHECK-IN ============ -->
+<div class="grid">
+  <div class="card">
+    <h2>Arrival &amp; check-in</h2>
+    <ul class="check">
+      <li>Tell the designated election official you are there to observe, and sign the <strong>observer log</strong>. Print your full name, street address, municipality, and organization (if any). Signing confirms you understand the rules and will follow them. <span class="cite">EL 4.04(1); § 7.41(1)</span> <span class="tag tD">LAW</span></li>
+      <li>Show <strong>photo ID with your name</strong>. It does <em>not</em> have to be a voter-ID-qualifying document. <span class="cite">EL 4.04(1)</span> <span class="tag tD">LAW</span></li>
+      <li>The official must <strong>offer you a summary of the rules</strong> and tell you three things: (1) who answers your questions, (2) how you can move between observation areas, and (3) <strong>where ballots are remade</strong>. If they don’t, ask. <span class="cite">EL 4.03(2)(b)</span> <span class="tag tD">LAW</span></li>
+      <li>Get your <strong>observer badge</strong> and wear it the whole time. <span class="cite">EL 4.03(2)(c)</span> <span class="tag tD">LAW</span></li>
+      <li>Check in with your <strong>team lead</strong> and get your assigned area. <span class="tag tT">TEAM</span></li>
+      <li>Write down your arrival time, on the observer form or as a time-stamped screenshot. <span class="tag tT">TEAM</span></li>
+      <li>Ask the official for the <strong>redacted results-download instructions</strong>. MEC said observers and media can have a copy. <span class="tag tN">REPORTED</span></li>
+    </ul>
+  </div>
+  <div class="card">
+    <h2>What to bring / wear</h2>
+    <ul>
+      <li>Photo ID · clipboard or folder · several pens · <strong>observer forms and tabulator forms</strong> · water and snacks · phone charger. <span class="tag tT">TEAM</span></li>
+      <li>Comfortable shoes. You may be standing for hours.</li>
+      <li><strong>No backpacks or large purses.</strong> A satchel about the size of a ballot envelope is fine. <span class="tag tT">TEAM</span></li>
+      <li><strong>No campaign gear of any kind.</strong> Nothing showing a candidate, party, or referendum position on the ballot, and nothing that suggests you are an election official. <span class="cite">EL 4.04(10)</span> <span class="tag tD">LAW</span></li>
+    </ul>
+    <div class="callout warn small"><strong>Who may not observe:</strong> a candidate on the ballot at that location. Anyone else may observe, and you don’t have to represent an organization. <span class="cite">§ 7.41(1); EL 4.02(10), 4.04(1)</span> <span class="tag tD">LAW</span></div>
+  </div>
+</div>
+
+<!-- ============ RIGHTS ============ -->
+<div class="card flow" style="margin-top:14px">
+  <h2>Your rights as an observer (what officials must provide)</h2>
+  <table>
+    <tr><th style="width:62%">Right</th><th>Source</th></tr>
+    <tr><td>To observe <strong>all counting of ballots</strong> at the central counting location.</td><td><span class="cite">EL 4.05(6)(a)</span> <span class="tag tD">LAW</span></td></tr>
+    <tr><td>An observation area positioned so you can <strong>readily observe all public aspects</strong> of the process.</td><td><span class="cite">§ 7.41(2); EL 4.03(1)(a)</span> <span class="tag tD">LAW</span></td></tr>
+    <tr><td>The same right of access to the absentee board’s meeting that you would have at a polling place.</td><td><span class="cite">§ 7.52(1)(a)</span> <span class="tag tD">LAW</span></td></tr>
+    <tr><td>An observation area <strong>at least 3 ft and no more than 8 ft</strong> from (1) tables where absentee voters’ names are announced, (2) registration tables, and (3) <strong>tables where ballots are remade</strong>. Tape or cones usually mark the line.</td><td><span class="cite">EL 4.03(1)(b)</span> <span class="tag tD">LAW</span></td></tr>
+    <tr><td>Hearing each absentee voter’s name announced, loud enough for the public to hear. You may ask once for a name or address to be repeated. Further repeats are at the official’s discretion.</td><td><span class="cite">§ 7.52(3)(a); EL 4.03(6)</span> <span class="tag tD">LAW</span></td></tr>
+    <tr><td>Observing <strong>certificate envelopes set aside for rejection</strong>, in a manner the official sets.</td><td><span class="cite">EL 4.03(7)</span> <span class="tag tD">LAW</span></td></tr>
+    <tr><td>Observing the poll lists, minus the confidential portions, when it won’t interfere. On request, officials must tell you whether a confidential list exists, how many names are on it, and how many of those have voted.</td><td><span class="cite">EL 4.03(8); § 7.41(4)</span> <span class="tag tD">LAW</span></td></tr>
+    <tr><td>Use of any available chair, and the same restroom access the election officials have.</td><td><span class="cite">EL 4.03(3)</span> <span class="tag tD">LAW</span></td></tr>
+    <tr><td>An accessible observation area with room for mobility equipment.</td><td><span class="cite">EL 4.03(1)(c)</span> <span class="tag tD">LAW</span></td></tr>
+    <tr><td>Officials may limit how many observers from one organization are present, but only <strong>uniformly across all organizations</strong>, and they must document the action and the reason.</td><td><span class="cite">EL 4.03(4); § 7.41(1)</span> <span class="tag tD">LAW</span></td></tr>
+    <tr><td>If the site can’t meet the observation-area requirements, the official must <strong>record the reason</strong> and send it to WEC within 60 days.</td><td><span class="cite">EL 4.03(5)</span> <span class="tag tD">LAW</span></td></tr>
+    <tr><td>Taking photos, video, and audio at central count, subject to the limits on the next card.</td><td><span class="cite">EL 4.05(6)(b)</span> <span class="tag tD">LAW</span></td></tr>
+    <tr><td>Texting, email, and other silent phone use are allowed. Voice or video calls are not allowed in the observer area; step outside to call.</td><td><span class="cite">EL 4.04(12)</span> <span class="tag tD">LAW</span></td></tr>
+    <tr><td>Before you can be removed: <strong>one warning</strong>; then an order to leave; then, if police are called, a <strong>written, signed order stating the reason</strong>.</td><td><span class="cite">EL 4.03(11)</span> <span class="tag tD">LAW</span></td></tr>
+  </table>
+</div>
+
+<!-- ============ CONDUCT ============ -->
+<div class="grid">
+  <div class="card">
+    <h2>Do</h2>
+    <ul class="do">
+      <li>Follow the designated official’s instructions. Refusing can get you removed. <span class="cite">EL 4.04(2)</span> <span class="tag tD">LAW</span></li>
+      <li>Ask questions only of the official(s) named at check-in. <span class="cite">EL 4.04(4)</span> <span class="tag tD">LAW</span></li>
+      <li>Keep conversation short and quiet. <span class="cite">EL 4.04(8)</span> <span class="tag tD">LAW</span></li>
+      <li>Move between observation areas only in the way the official has set. <span class="cite">EL 4.04(3)</span> <span class="tag tD">LAW</span></li>
+      <li>Tell another observer before you step away so your area stays covered. <span class="tag tT">TEAM</span></li>
+      <li>Be courteous to everyone, all the time. Most workers are doing their best. Treat them as allies in a good process. <span class="tag tT">TEAM</span></li>
+      <li>Record audio <strong>only of conversations you are part of</strong>. Wisconsin is a one-party-consent state. <span class="cite">§ 968.31(2)(c)</span> <span class="tag tD">LAW</span> Record openly. Don’t hide devices. <span class="tag tT">TEAM</span></li>
+      <li>Hand your notes to your team lead before you leave, and write down your departure time. <span class="tag tT">TEAM</span></li>
+    </ul>
+  </div>
+  <div class="card">
+    <h2>Don’t</h2>
+    <ul class="dont">
+      <li>Touch any ballot, envelope, container, return, or equipment. <span class="cite">§ 5.87(1); EL 4.03(9)</span> <span class="tag tD">LAW</span></li>
+      <li>Look at <strong>confidential information</strong>: DL or state ID numbers, SSN digits, dates of birth, confidential-voter data, guardianship information, or a <strong>voted ballot</strong>. <span class="cite">EL 4.02(5), 4.03(10)</span> <span class="tag tD">LAW</span></li>
+      <li>Photograph or record <strong>passwords or log-ins</strong> on tabulators or computers. <span class="tag tT">TEAM</span></li>
+      <li>Photograph or record <strong>a person returning an absentee ballot or fixing a certificate envelope</strong>. Voters drop ballots off here all day. <span class="cite">EL 4.05(3)(b)</span> <span class="tag tD">LAW</span> <span class="tag tI">APPLIED</span>: this site is both a central count and a meeting of the absentee board, so we apply the stricter rule.</li>
+      <li>Be loud or disruptive. <span class="cite">EL 4.04(6)</span> <span class="tag tD">LAW</span></li>
+      <li>Electioneer, distribute election material, or discuss any candidate, party, or question on the ballot. <span class="cite">EL 4.04(9), (11)</span> <span class="tag tD">LAW</span></li>
+      <li>Start a conversation with a voter. If one speaks to you, keep it brief, say you’re an observer and not an official, and point them to an official. <span class="cite">EL 4.04(13)</span> <span class="tag tD">LAW</span></li>
+      <li>Talk to unfamiliar observers or to the press. <span class="tag tT">TEAM</span></li>
+      <li>Challenge a ballot without your team lead. See “Challenges.” <span class="tag tT">TEAM</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============ WATCH LIST ============ -->
+<div class="card flow" style="margin-top:14px">
+  <h2>Watch list, in process order</h2>
+
+  <h3>A. Before counting starts</h3>
+  <table>
+    <tr><th style="width:45%">What should happen</th><th style="width:22%">Source</th><th>What to record if it doesn’t</th></tr>
+    <tr><td>Each tabulator prints a <strong>zero-count report</strong> before counting begins, and election officials witness it.</td><td><span class="cite">§ 5.84(2)</span> <span class="tag tD">LAW</span></td><td>Tabulator #, time, whether a zero tape was printed and shown.</td></tr>
+    <tr><td>The <strong>door covering each tabulator’s power button and ports is locked and sealed</strong>. In Nov 2024 an observer found 13 tabulators with doors not properly closed, and about 31,000 ballots were re-run.</td><td>MEC procedure <span class="tag tN">REPORTED</span></td><td>Tabulator #, door state, whether a seal was present and intact, time.</td></tr>
+    <tr><td>Seals on ballot containers are checked as intact before they are opened.</td><td><span class="cite">§ 5.86(2)</span> <span class="tag tD">LAW</span></td><td>Container/ward, seal state, who checked.</td></tr>
+    <tr><td>The board gave at least <strong>48 hours’ public notice</strong> of its meeting. (A pending complaint says notice was missed in August.)</td><td><span class="cite">§ 7.52(1)(a)</span> <span class="tag tD">LAW</span></td><td>Whether a notice is posted on site; photograph it if it is.</td></tr>
+  </table>
+
+  <h3>B. Staffing — bipartisan teams</h3>
+  <p>At central count, workers (other than specially trained technicians) must be <strong>split equally between the two major parties</strong>. Duties must be done by teams with equal numbers from each party <em>whenever enough people from each party are available</em>. <span class="cite">§ 5.86(1)</span> <span class="tag tD">LAW</span> Write down workers’ <strong>wristband colors</strong> and names if you can. <span class="tag tT">TEAM</span> A pending complaint alleges that one official exported results in August without an official from the other party present. Watch who does each export. <span class="tag tN">REPORTED</span></p>
+
+  <h3>C. Certificate envelope review (the most common issues)</h3>
+  <table>
+    <tr><th style="width:22%">Element</th><th style="width:48%">Standard</th><th>Source</th></tr>
+    <tr><td>Voter signature</td><td>Required. Any mark counts: a scribble, an X, or a printed name. Legibility doesn’t matter, and no date is needed.</td><td><span class="tag tT">TEAM</span></td></tr>
+    <tr><td>Witness signature</td><td>Required. A missing witness signature makes the certificate defective.</td><td><span class="cite">§ 6.87(2), (4)(b)1</span> <span class="tag tD">LAW</span></td></tr>
+    <tr><td>Witness printed name</td><td>Called for on the form. <strong>Our team materials conflict</strong> on whether a signature <em>or</em> a printed name alone is enough. Don’t argue it on the floor. Record exactly what is and isn’t on the envelope and flag it to your lead.</td><td><span class="cite">§ 6.87(2)</span> <span class="tag tI">APPLIED</span></td></tr>
+    <tr><td>Witness address: <em>partial</em></td><td>Enough if the clerk, acting reasonably, can identify a place to reach the witness. No single piece is required, and information anywhere on the envelope counts. WEC says these <strong>must</strong> be accepted: street number + street + municipality with no state or ZIP; street number + street + ZIP; street number + street matching the voter’s; or “same as voter.” A ZIP code alone, or a big-city name alone, may not be enough. That is a case-by-case clerk call.</td><td><em>Rise v. WEC</em> (Ct. App. 2024); WEC Q&amp;A (Feb 2024) <span class="tag tD">LAW</span></td></tr>
+    <tr><td>Witness address: <em>blank</em></td><td>The ballot may not be counted. The <strong>clerk may not fill it in</strong>; only the voter or witness can fix it, before 8 p.m.</td><td><span class="cite">§ 6.87(6d), (9)</span>; <em>White v. WEC</em> <span class="tag tD">LAW</span></td></tr>
+    <tr><td>Clerk initials on certificate (in-person absentee / ID)</td><td>Team guidance: if they’re missing, the ballot is still counted, but it <strong>must be noted on the EL-104</strong> (Inspectors’ Statement). Check that it was.</td><td><span class="cite">§ 6.86(1)(ar), 6.87(2)</span> <span class="tag tT">TEAM</span></td></tr>
+    <tr><td>Voter on the poll list</td><td>A ballot from someone who isn’t a qualified elector is not counted. <strong>Nuance:</strong> the law does provide a separate list for voters whose names aren’t on the printed poll list (for example, late registrants). A name being written in is not automatically a violation. Record the name or poll number, the reason given, and who authorized it, then tell your lead.</td><td><span class="cite">§ 7.52(3)(a), (3)(b)</span> <span class="tag tD">LAW</span> <span class="tag tI">APPLIED</span></td></tr>
+    <tr><td>Envelope opened &amp; resealed / more than one ballot</td><td>Not counted.</td><td><span class="cite">§ 7.52(3)(b)</span> <span class="tag tD">LAW</span></td></tr>
+    <tr><td>Rejected envelopes</td><td>Each one is endorsed “rejected” with the reason. They may be set aside on top of the pack, and some can get missed.</td><td><span class="cite">§ 7.52(3)(b)</span> <span class="tag tD">LAW</span> <span class="tag tT">TEAM</span></td></tr>
+  </table>
+  <div class="callout warn small"><strong>Report it:</strong> a ballot rejected for a witness address that looks locatable, or a blank-address envelope set aside with no attempt to cure it. Record it and notify your lead. <span class="tag tT">TEAM</span></div>
+
+  <h3>D. Opening &amp; handling ballots</h3>
+  <ul>
+    <li>The board checks that each ballot carries the <strong>issuing clerk’s endorsement (initials)</strong>. <span class="cite">§ 7.52(3)(a)</span> <span class="tag tD">LAW</span></li>
+    <li>The board writes each voter’s <strong>poll list number on the back of the ballot</strong>. The law currently requires this, and it is a known ballot-secrecy concern. Never photograph a numbered ballot back next to the poll list. <span class="cite">§ 7.52(3)(a)</span> <span class="tag tD">LAW</span> <span class="tag tI">APPLIED</span></li>
+    <li>Write down the time you see ballots being <strong>distributed to tables</strong>, and who brought them. <span class="tag tT">TEAM</span></li>
+    <li>The number of ballots must reconcile with the poll list. If there are extra ballots, they are drawn out at random and set aside. Blank ballots are marked, laid aside, and kept. <span class="cite">§ 7.52(4)</span> <span class="tag tD">LAW</span></li>
+  </ul>
+
+  <h3>E. Remakes (duplicate ballots)</h3>
+  <ul>
+    <li>A ballot the tabulator can’t read is <strong>duplicated in the presence of witnesses</strong>. The original is labeled “Damaged Ballot” and the copy “Duplicate Damaged Ballot,” and <strong>both carry the same serial number</strong>. Overvoted ballots follow the same pattern (“Overvoted” / “Duplicate Overvoted”). <span class="cite">§ 5.85(2)(b), (3)</span> <span class="tag tD">LAW</span></li>
+    <li>Check that <strong>two inspectors from different parties</strong> do every remake. Record <strong>how many remakes</strong> there were, the <strong>reason for each</strong>, and whether the <strong>serial numbers match</strong>. <span class="cite">§ 5.86(1)</span> <span class="tag tD">LAW</span> <span class="tag tT">TEAM</span></li>
+    <li>The remake table must be within <strong>3 to 8 ft</strong> of an observation area. <span class="cite">EL 4.03(1)(b)3</span> <span class="tag tD">LAW</span></li>
+  </ul>
+
+  <h3>F. Closing the count &amp; exporting results (highest-risk step)</h3>
+  <ul>
+    <li><strong>August 2026 failure:</strong> on <strong>5 of 9</strong> tabulators, audit logs were exported instead of results, covering about 15,000 absentee ballots. MEC has since adopted laminated, step-by-step instructions with photos for the export teams. <span class="tag tN">REPORTED</span></li>
+    <li>For <strong>each tabulator</strong>, record: tabulator #, export start and end times, <strong>who performed it</strong> (party/wristband), whether a second-party official watched, and whether the team followed the posted steps. <span class="tag tT">TEAM</span></li>
+    <li>Keep your eyes on the data sticks, without filming passwords: when they were sealed or bagged, who carried them, and when they left with the escort. <span class="tag tT">TEAM</span></li>
+    <li>By closing time, the clerk must <strong>post</strong> how many absentee ballots were mailed or sent out and how many came back. Look for it. <span class="cite">§ 7.52(1)(c)</span> <span class="tag tD">LAW</span></li>
+  </ul>
+</div>
+
+<!-- ============ HOT ISSUES ============ -->
+<div class="card flow" style="margin-top:14px">
+  <h2>Live issues for this election</h2>
+
+  <h3>1. Areas you can’t see (the “Secure Ballot Room”)</h3>
+  <p>Observers have reported over several elections that rooms where envelopes are stored, sorted, or scanned are walled off or have covered windows. <span class="tag tN">REPORTED</span> WEC dismissed one complaint about this 5–1 on May 7, 2026. A newer complaint from the August primary is pending. <span class="tag tN">REPORTED</span> <strong>Don’t try to get in, and don’t argue.</strong> Record it as a <em>coverage gap</em>: the time; which activity you could not see; where it happened; what you were told, by whom; and whether the official is recording the reason under EL 4.03(5). <span class="cite">§ 7.41(2); EL 4.05(6)(a), 4.03(5)</span> <span class="tag tD">LAW</span></p>
+
+  <h3>2. Ballot spoiling</h3>
+  <p><strong>A returned absentee ballot cannot be spoiled and replaced</strong>, even if the voter changed their mind or a candidate dropped out. A voter who has <em>not</em> yet returned a ballot and made a mistake can still get a replacement. Returning a ballot so a <strong>defective certificate can be fixed</strong> is a separate, permitted process. WEC adopted this guidance July 9, 2026, and a Dane County court upheld it July 29, 2026 (<em>Bins v. WEC</em>, 2026CV002400). If you see an attempt to spoil or replace a returned ballot, record it and tell your lead. <span class="cite">§ 6.86(5), 6.87(9)</span> <span class="tag tD">LAW</span> <span class="tag tN">REPORTED</span> <span class="small">(Appeals are possible. Your lead will confirm the status Tuesday morning.)</span></p>
+
+  <h3>3. Law enforcement &amp; federal personnel</h3>
+  <p>WEC guidance (Oct 15, 2026) says that law enforcement generally should not be present unless they are voting, doing a legitimate law-enforcement action, or responding to an official’s request. Federal agency representatives may observe if they give proper documentation, and they are bound by the same observer rules as you. MEC says <strong>armed federal officers are prohibited</strong> at polling places and at Central Count. <span class="tag tN">REPORTED</span> <strong>Your role:</strong> don’t engage. Record the time, the agency (if shown), whether they were uniformed or armed, what they did, and how officials responded. Tell your lead immediately.</p>
+
+  <h3>4. What has <em>not</em> changed</h3>
+  <ul>
+    <li><strong>No Monday pre-processing.</strong> Ballots still can’t be opened before 7 a.m. on Election Day. The 2025–26 bills to change this (and to end central count) did not become law; SB 624 failed March 23, 2026. <span class="tag tN">REPORTED</span></li>
+    <li>Ch. EL 4 (the observer rule) took effect <strong>Aug 1, 2025</strong> and governs this election. <span class="tag tD">LAW</span></li>
+  </ul>
+</div>
+
+<!-- ============ ESCALATION ============ -->
+<div class="grid">
+  <div class="card">
+    <h2>If something looks wrong</h2>
+    <ol>
+      <li><strong>Write it down first:</strong> time, table/tabulator #, ward, voter or poll number if it was announced, workers’ names or wristband colors, exactly what happened.</li>
+      <li><strong>Was it noted on the EL-104</strong> (Inspectors’ Statement)? Write yes, no, or unknown.</li>
+      <li><strong>Major issue:</strong> find your team lead right away. If you can’t reach them, call or text the hotline. <span class="tag tT">TEAM</span></li>
+      <li>If your lead tells you to, ask the designated official, calmly, to note it on the EL-104. Then write down the answer you got.</li>
+      <li>Can’t get a name? Step back and photograph the <em>official</em> discreetly, never voters or ballots. <span class="tag tT">TEAM</span></li>
+    </ol>
+  </div>
+  <div class="card">
+    <h2>If you are warned or told to leave</h2>
+    <ol>
+      <li><strong>Stop the conduct you were warned about.</strong> You get one warning. <span class="cite">EL 4.03(11)</span> <span class="tag tD">LAW</span></li>
+      <li>If you are ordered to leave, <strong>comply</strong>. Politely ask for the <strong>written order with the reason and signature</strong>, and for the opposite-party official to be offered the chance to sign it. <span class="cite">EL 4.03(11)(b)–(c)</span> <span class="tag tD">LAW</span></li>
+      <li>Write down the time, names, and the exact words used. The incident must be reported to WEC within 60 days. <span class="cite">EL 4.03(11)(d)</span> <span class="tag tD">LAW</span></li>
+      <li>Call your team lead from outside.</li>
+    </ol>
+    <div class="callout small"><strong>Challenges:</strong> a Wisconsin elector may challenge an absentee ballot <em>for cause</em>, under oath. <span class="cite">§ 7.52(5); EL 4.04(5); ch. EL 9</span> <span class="tag tD">LAW</span> Never challenge on your own. It goes through your team lead. <span class="tag tT">TEAM</span></div>
+  </div>
+</div>
+
+<!-- ============ NOTE TEMPLATE ============ -->
+<div class="card flow pb" style="margin-top:14px">
+  <h2>Observation log</h2>
+  <p class="small">One line per observation. Write facts, not conclusions: “Worker in blue wristband wrote address on envelope #—” rather than “Worker committed fraud.” Leave a line out rather than guess.</p>
+  <table class="log">
+    <tr><th style="width:9%">Time</th><th style="width:13%">Where (table / tab # / ward)</th><th style="width:16%">Who (name / wristband / role)</th><th style="width:36%">What I saw or heard</th><th style="width:9%">EL-104?</th><th style="width:17%">Told whom / when</th></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  </table>
+  <h3>Tabulator export log</h3>
+  <table class="log">
+    <tr><th>Tab #</th><th>Zero tape seen?</th><th>Door sealed?</th><th>Export start / end</th><th>Performed by (party)</th><th>2nd-party witness?</th><th>Stick sealed / handed to</th></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  </table>
+  <div class="callout ok small" style="margin-top:10px"><strong>For team leads only — complaint routes.</strong> Observers just hand in notes. A <strong>§ 5.06</strong> complaint against a local election official may be filed only by an <em>elector of the jurisdiction</em> (here, City of Milwaukee voters). It must be sworn and filed promptly, and the remedy is a WEC order. A <strong>§ 5.05</strong> sworn complaint (form EL-1100) can be filed by anyone for alleged violations of chs. 5–10 or 12, and can lead to a referral to the district attorney.</div>
+</div>
+
+<footer>
+  <strong>Sources</strong> (checked Oct 29, 2026)
+  <ol>
+    <li>Wis. Admin. Code ch. EL 4 (CR 24-032, eff. 8-1-25) — docs.legis.wisconsin.gov/code/admin_code/el/4</li>
+    <li>Wis. Stat. §§ 5.84–5.87, 6.86–6.88, 7.41, 7.51–7.53, 968.31 — docs.legis.wisconsin.gov/statutes</li>
+    <li>Milwaukee Election Commission, Central Count page and drop-box schedule (Italian Community Center; 7 a.m.–8 p.m. drop-off) — city.milwaukee.gov/election</li>
+    <li>Urban Milwaukee, Oct 22, 2026 — new results-download instructions; first Central Count at ICC</li>
+    <li>Spectrum News, Oct 15–16, 2026; WPR, Oct 16, 2026 — WEC law-enforcement guidance; MEC armed-officer policy; seven chief inspectors</li>
+    <li>WEC, “UPDATED Ballot Spoiling Guidance” (7/10/26) and “Update on Ballot Spoiling Litigation” (7/29/26, <em>Bins v. WEC</em>)</li>
+    <li><em>Rise, Inc. v. WEC</em>, 2024 WI App 48; WEC “Absentee Ballot Witness Address Q&amp;A” (2/9/24); <em>White v. WEC</em>, Dane Co. 2022CV1008</li>
+    <li>MacIver Institute (May 15, 2026) and Center for Election Confidence (Sept 14, 2026) — observer-access complaints</li>
+    <li>Wisconsin Watch / WPR / Fox6, Nov 5, 2024 — tabulator door-seal incident</li>
+    <li>LegiScan, AB 617 / SB 624 (2025–26) — status</li>
+  </ol>
+</footer>
+
+</div>
+</body>
+</html>

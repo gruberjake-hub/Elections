@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Put the Observer App on Your Phone</title>
+<style>
+  :root {
+    --bg: #f6f5f1; --card: #ffffff; --ink: #1c1c1c; --muted: #555;
+    --line: #d9d6cc; --accent: #1f4e8c; --accent-soft: #e6eef9;
+    --warn: #8a4b00; --warn-soft: #fff3df; --stop: #9b1c1c; --stop-soft: #fdecec;
+    --ok: #1d6b3a; --ok-soft: #e7f5ec;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 19px/1.55 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  main { max-width: 760px; margin: 0 auto; padding: 20px 16px 60px; }
+  h1 { font-size: 1.7rem; line-height: 1.25; margin: 8px 0 4px; }
+  h2 { font-size: 1.3rem; margin: 34px 0 10px; }
+  h3 { font-size: 1.1rem; margin: 18px 0 6px; }
+  p { margin: 8px 0; }
+  .sub { color: var(--muted); margin-top: 0; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin: 14px 0; }
+  .big { border: 3px solid var(--accent); background: var(--accent-soft); }
+  .big h2 { margin-top: 0; }
+  .warn { border-left: 6px solid var(--warn); background: var(--warn-soft); }
+  .stop { border-left: 6px solid var(--stop); background: var(--stop-soft); }
+  .ok   { border-left: 6px solid var(--ok); background: var(--ok-soft); }
+  .addr {
+    display: block; font-size: 1.15rem; font-weight: 700; word-break: break-all;
+    background: #fff; border: 2px dashed var(--accent); border-radius: 10px;
+    padding: 12px 14px; margin: 10px 0; color: var(--accent); text-decoration: none;
+  }
+  ol.steps { padding-left: 0; list-style: none; counter-reset: s; margin: 10px 0; }
+  ol.steps > li {
+    counter-increment: s; position: relative; padding: 10px 0 10px 52px;
+    border-bottom: 1px solid var(--line); min-height: 50px;
+  }
+  ol.steps > li:last-child { border-bottom: 0; }
+  ol.steps > li::before {
+    content: counter(s); position: absolute; left: 0; top: 8px;
+    width: 38px; height: 38px; border-radius: 50%; background: var(--accent); color: #fff;
+    font-weight: 700; display: flex; align-items: center; justify-content: center;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; margin: 0 2px;
+    border: 1.5px solid #888; border-radius: 7px; background: #fff;
+    font-weight: 700; white-space: nowrap; font-size: .95em;
+  }
+  .btn svg { width: 18px; height: 18px; }
+  .say { font-weight: 700; }
+  details { background: var(--card); border: 1px solid var(--line); border-radius: 12px; margin: 12px 0; }
+  details[open] { border-color: var(--accent); }
+  summary {
+    cursor: pointer; padding: 16px 18px; font-size: 1.15rem; font-weight: 700;
+    list-style: none; display: flex; align-items: center; gap: 12px;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "▸"; margin-left: auto; color: var(--accent); font-size: 1.2rem; }
+  details[open] > summary::after { content: "▾"; }
+  .inner { padding: 0 18px 16px; }
+  .tag { font-size: .8rem; font-weight: 700; color: #fff; background: var(--accent); border-radius: 999px; padding: 2px 10px; }
+  .guess { display: none; margin: 10px 0; padding: 10px 14px; border-radius: 10px; background: var(--ok-soft); border: 1px solid var(--ok); }
+  table { width: 100%; border-collapse: collapse; font-size: .95rem; }
+  th, td { text-align: left; vertical-align: top; padding: 9px 8px; border-bottom: 1px solid var(--line); }
+  th { background: #efede6; }
+  .note { font-size: .9rem; color: var(--muted); }
+  ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+  footer { margin-top: 40px; font-size: .85rem; color: var(--muted); }
+  @media print {
+    body { font-size: 13px; background: #fff; }
+    details { break-inside: avoid; }
+    details > .inner { display: block !important; }
+    summary::after, .guess { display: none !important; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Put the Observer App on Your Phone</h1>
+<p class="sub">About 2 minutes. Nothing to download. Nothing to pay for.</p>
+
+<!-- ================= THE BIG IDEA ================= -->
+<section class="card big">
+  <h2>There is nothing to download.</h2>
+  <p>We call it "the app," but it is really a <strong>website</strong>. You open it in the same program you use to look things up on the internet (Safari, Chrome, or Samsung Internet).</p>
+  <p>To make it feel like an app, you put a <strong>shortcut icon on your home screen</strong>. After that, you tap the icon and it opens, just like any other app.</p>
+  <p><strong>You will not find it in the App Store or Google Play.</strong> If you see something there with a similar name, it is not ours. Do not install it.</p>
+</section>
+
+<!-- ================= STEP 0 ================= -->
+<h2>First: open the website</h2>
+<div class="card">
+  <p>Tap this address, or type it exactly into the <strong>address bar</strong> of your web browser:</p>
+  <a class="addr" href="https://web-trainstorm.onrender.com">web-trainstorm.onrender.com</a>
+  <p class="note">The address bar is the long box at the top (or bottom) of the browser that shows the current web address. Typing it into a Google search box also works. Just tap the result that shows this exact address.</p>
+</div>
+
+<div class="card warn">
+  <h3 style="margin-top:0">⏳ The first time, it can take up to a minute to appear.</h3>
+  <p>If nobody has used it for a while, the website has to "wake up." A blank or loading screen for 30–60 seconds is normal. <strong>Wait. Don't keep tapping.</strong> After it wakes up, it's fast.</p>
+</div>
+
+<div class="card warn">
+  <h3 style="margin-top:0">Did you tap a link in a text, email, or Facebook?</h3>
+  <p>Sometimes the website opens <em>inside</em> that other app instead of your real browser. If so, you won't see the "Add to Home Screen" choice.</p>
+  <p><strong>Fix:</strong> look for a button that says <span class="say">Open in Safari</span>, <span class="say">Open in Chrome</span>, or <span class="say">Open in browser</span> (often behind <span class="btn">⋯</span> or <span class="btn">⋮</span>). Or just type the address into your browser yourself.</p>
+</div>
+
+<!-- ================= PICK YOUR PHONE ================= -->
+<h2>Next: pick your phone</h2>
+<p><strong>Not sure which you have?</strong> An <strong>iPhone</strong> has an Apple logo on the back. Almost every other phone (Samsung, Google Pixel, Motorola, and others) is an <strong>Android</strong>.</p>
+<div class="guess" id="guess"></div>
+
+<!-- iPhone Safari -->
+<details id="iphone-safari">
+  <summary>🍎 iPhone or iPad, using Safari <span class="tag">most iPhones</span></summary>
+  <div class="inner">
+    <p>Safari is the browser with the blue compass icon. It is the easiest way on an iPhone.</p>
+    <ol class="steps">
+      <li>Open the website in <strong>Safari</strong> (see "First: open the website" above).</li>
+      <li>Find the <span class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M6 11H5v10h14V11h-1"/></svg>Share</span> button. It's a square with an arrow pointing up.
+        <ul>
+          <li><strong>Newer iPhones:</strong> tap the <span class="btn">⋯</span> (three dots) next to the address bar first, then tap <span class="say">Share</span>.</li>
+          <li><strong>Older iPhones:</strong> the Share button is right on the bottom bar.</li>
+        </ul>
+      </li>
+      <li>Scroll down the list and tap <span class="say">Add to Home Screen</span>. If you don't see it, tap <span class="say">View More</span> or <span class="say">More</span> at the bottom of the list.</li>
+      <li>If you see a switch called <span class="say">Open as Web App</span>, <strong>leave it ON (green)</strong>.</li>
+      <li>You can rename it (for example, "Observer"). Then tap <span class="say">Add</span> in the top-right corner.</li>
+      <li>Go to your home screen. The new icon is there. <strong>From now on, always open it from this icon.</strong> (See "Keep your notes safe" below for why.)</li>
+    </ol>
+  </div>
+</details>
+
+<!-- iPhone Chrome / others -->
+<details id="iphone-chrome">
+  <summary>🍎 iPhone, using Chrome, Edge, or Firefox</summary>
+  <div class="inner">
+    <p>This works on newer iPhones. If anything below doesn't match your screen, the simplest fix is to use <strong>Safari</strong> instead (section above).</p>
+    <ol class="steps">
+      <li>Open the website in your browser.</li>
+      <li>Tap the <span class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M6 11H5v10h14V11h-1"/></svg>Share</span> button. In Chrome it's usually at the right end of the address bar. If you don't see it, tap <span class="btn">⋯</span> and look for <span class="say">Share</span>.</li>
+      <li>Scroll down and tap <span class="say">Add to Home Screen</span>.</li>
+      <li>Tap <span class="say">Add</span>.</li>
+    </ol>
+  </div>
+</details>
+
+<!-- Android Chrome -->
+<details id="android-chrome">
+  <summary>🤖 Android, using Chrome <span class="tag">Pixel, Motorola, most Androids</span></summary>
+  <div class="inner">
+    <p>Chrome is the round red, yellow, green, and blue icon.</p>
+    <ol class="steps">
+      <li>Open the website in <strong>Chrome</strong>.</li>
+      <li>Tap the <span class="btn">⋮</span> (three dots stacked up and down) in the top-right corner.</li>
+      <li>Scroll down the menu. Tap the choice that says one of these (it depends on how up to date your phone is):
+        <ul>
+          <li><span class="say">Install and create shortcut</span></li>
+          <li><span class="say">Add to Home screen</span></li>
+        </ul>
+      </li>
+      <li>If it asks you to choose, tap <span class="say">Create shortcut</span>.</li>
+      <li>You can rename it (for example, "Observer"). Tap <span class="say">Add</span>.</li>
+      <li>If it asks again, tap <span class="say">Add</span> again or <span class="say">Add automatically</span>. You can also drag the icon to where you want it.</li>
+    </ol>
+  </div>
+</details>
+
+<!-- Samsung Internet -->
+<details id="android-samsung">
+  <summary>🤖 Samsung phone, using Samsung Internet</summary>
+  <div class="inner">
+    <p>Samsung Internet is the purple icon with a planet. Many Samsung phones use it by default. (If your Samsung uses Chrome instead, use the Chrome section above.)</p>
+    <ol class="steps">
+      <li>Open the website in <strong>Samsung Internet</strong>.</li>
+      <li>Tap the <span class="btn">≡</span> (three lines) at the bottom-right.</li>
+      <li>Tap <span class="say">Add page to</span>.</li>
+      <li>Tap <span class="say">Home screen</span>.</li>
+      <li>Tap <span class="say">Add</span>. If it asks again, tap <span class="say">Add</span> once more.</li>
+    </ol>
+  </div>
+</details>
+
+<!-- Android Firefox / Edge -->
+<details id="android-other">
+  <summary>🤖 Android, using Firefox or Edge</summary>
+  <div class="inner">
+    <ol class="steps">
+      <li>Open the website in your browser.</li>
+      <li>Tap the menu: <span class="btn">⋮</span> in Firefox, or <span class="btn">≡</span> / <span class="btn">⋯</span> at the bottom in Edge.</li>
+      <li>Tap <span class="say">Add to Home screen</span> (in Edge it may say <span class="say">Add to phone</span>). You may need to tap <span class="say">More</span> first to see it.</li>
+      <li>Tap <span class="say">Add</span>. If it asks again, tap <span class="say">Add</span> once more.</li>
+    </ol>
+  </div>
+</details>
+
+<!-- Computer -->
+<details id="computer">
+  <summary>💻 Computer (Windows or Mac)</summary>
+  <div class="inner">
+    <p>Most observing happens on a phone, but a computer is handy for reading the training.</p>
+    <ol class="steps">
+      <li>Open the website in your browser (Chrome, Edge, Safari, or Firefox).</li>
+      <li>Save it as a bookmark: press <strong>Ctrl + D</strong> on Windows, or <strong>⌘ Command + D</strong> on a Mac. (Or click the ☆ star at the right end of the address bar.)</li>
+      <li>Click <span class="say">Done</span>. Next time, find it in your bookmarks or just start typing "web-trainstorm" in the address bar.</li>
+    </ol>
+  </div>
+</details>
+
+<!-- ================= NOTES SAFE ================= -->
+<h2>Keep your notes safe</h2>
+<div class="card stop">
+  <p><strong>Your observations are saved on your phone until you tap "Submit to team."</strong> Until then, they live only inside the browser you used. Four rules:</p>
+  <ol>
+    <li><strong>Always open it the same way</strong>, from your home-screen icon. On an iPhone, the icon and Safari keep <em>separate</em> notes. Something you logged in Safari will not show up in the icon, and the reverse.</li>
+    <li><strong>Don't use Private or Incognito browsing.</strong> Everything is erased when you close it.</li>
+    <li><strong>Submit before you clean up.</strong> Don't clear your browsing history, "website data," or cookies, and don't delete the home-screen icon, while you have unsent observations.</li>
+    <li><strong>Submit at the end of every shift</strong>, even if you plan to come back.</li>
+  </ol>
+</div>
+
+<div class="card ok">
+  <p><strong>Already logged things in the browser before you made the icon?</strong> Open the browser the old way one more time, tap <span class="say">Submit to team</span>, and confirm it went through. Then switch to the icon for good. Codes you entered on the Setup tab may need to be typed again in the icon.</p>
+</div>
+
+<!-- ================= TROUBLESHOOTING ================= -->
+<h2>If something doesn't look right</h2>
+<div class="card" style="padding:6px 10px">
+<table>
+  <tr><th>What you see</th><th>What to do</th></tr>
+  <tr><td>Can't find it in the App Store or Play Store</td><td>That's expected. It isn't there. Go back to "First: open the website."</td></tr>
+  <tr><td>No "Add to Home Screen" choice anywhere</td><td>You're probably inside another app (text, email, Facebook). Open it in your real browser. Also check you are not in Private/Incognito mode.</td></tr>
+  <tr><td>Blank white or dark screen</td><td>It's waking up. Wait a full minute before trying again.</td></tr>
+  <tr><td>"Page not found" or a search results page</td><td>The address was typed slightly wrong. Check spelling: <strong>web-trainstorm.onrender.com</strong> (there's a dash after "web").</td></tr>
+  <tr><td>I added it, but I can't find the icon</td><td><strong>iPhone:</strong> swipe left through your home screens, or swipe down from the middle of the screen and type the name. <strong>Android:</strong> check the last home screen page, or your app list.</td></tr>
+  <tr><td>My old notes are gone</td><td>You may have opened it a different way (icon vs. browser). Try the other one. <strong>Don't delete anything</strong>, and call the hotline or your team lead.</td></tr>
+  <tr><td>The icon is a tiny picture of the page, not a logo</td><td>That's normal. It still works.</td></tr>
+</table>
+</div>
+
+<div class="card">
+  <h3 style="margin-top:0">Helping someone else set up?</h3>
+  <ul>
+    <li>Have them open it in their <strong>real</strong> browser, not from a text-message preview.</li>
+    <li>Make the icon <strong>before</strong> they log anything.</li>
+    <li>Have them close the browser tab and open the icon once, so they know where it lives.</li>
+  </ul>
+</div>
+
+<footer>
+  Observer support hotline (text or call): (608) 699-6950<br>
+  Phone menus change with updates. If your screen looks a little different, look for the same words: <em>Share</em>, <em>Add to Home Screen</em>, <em>Create shortcut</em>, or <em>Add page to</em>.
+</footer>
+
+</main>
+
+<script>
+/* Opens the section that matches this device, as a convenience.
+   Everything still works if this script doesn't run. */
+(function () {
+  try {
+    var ua = navigator.userAgent || "";
+    var isIOS = /iPhone|iPad|iPod/.test(ua) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    var id = null, label = "";
+    if (isIOS) {
+      if (/CriOS|EdgiOS|FxiOS/.test(ua)) { id = "iphone-chrome"; label = "an iPhone or iPad using Chrome, Edge, or Firefox"; }
+      else { id = "iphone-safari"; label = "an iPhone or iPad using Safari"; }
+    } else if (/Android/.test(ua)) {
+      if (/SamsungBrowser/.test(ua)) { id = "android-samsung"; label = "a Samsung phone using Samsung Internet"; }
+      else if (/Firefox|EdgA/.test(ua)) { id = "android-other"; label = "an Android phone using Firefox or Edge"; }
+      else { id = "android-chrome"; label = "an Android phone using Chrome"; }
+    } else if (/Windows|Macintosh|Linux|CrOS/.test(ua)) {
+      id = "computer"; label = "a computer";
+    }
+    if (id) {
+      var d = document.getElementById(id);
+      d.open = true;
+      var g = document.getElementById("guess");
+      g.innerHTML = "It looks like you're on <strong>" + label + "</strong>. We've opened those steps for you below. If that's wrong, pick the right one.";
+      g.style.display = "block";
+    }
+  } catch (e) { /* no-op: page works without this */ }
+})();
+</script>
+</body>
+</html>

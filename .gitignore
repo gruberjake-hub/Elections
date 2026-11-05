@@ -1,0 +1,11 @@
+# Never commit your secret key or local env
+.env
+.env.local
+
+# Node
+node_modules/
+npm-debug.log*
+
+# OS junk
+.DS_Store
+Thumbs.db

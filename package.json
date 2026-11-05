@@ -1,0 +1,14 @@
+{
+  "name": "election-complaint-harness",
+  "version": "1.0.0",
+  "description": "Field-capture app + drafting server for credentialed election observers. Runs the Election Complaint Filing Assistant system profile against the Anthropic API.",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "private": true
+}

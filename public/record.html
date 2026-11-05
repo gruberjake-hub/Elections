@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex, nofollow">
+<title>Observation record</title>
+<!--
+  record.html — the record view page, served at /r/<RecordID>.
+  Shows one observation, every revision of it, and every verified photo
+  attached to it. Read-only: the Google Sheet stays the record.
+
+  Data comes from POST /api/record-view, which needs the drafter code. If this
+  browser already has the code saved in the field app (same site), we reuse it;
+  otherwise we ask once and remember it under "record-view-code".
+-->
+<style>
+  :root{
+    --bg:#070a11; --panel:#171f30; --panel2:#1e2740; --line:#2f3b58;
+    --ink:#e8edf7; --muted:#93a0bd; --accent:#4f7cff; --accent2:#3a63e0;
+    --good:#3fb06b; --warn:#e0a63a; --bad:#e05a5a; --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+  header{padding:14px 16px;background:linear-gradient(180deg,#131a2b,#070a11);border-bottom:1px solid var(--line)}
+  header h1{font-size:16px;margin:0;font-weight:650}
+  header .sub{color:var(--muted);font-size:12px;margin-top:2px;word-break:break-all}
+  main{max-width:960px;margin:0 auto;padding:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+  .card h2{font-size:14px;margin:0 0 10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:600}
+  .pill{display:inline-block;font-size:11px;padding:3px 8px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--muted);margin:0 4px 4px 0}
+  .pill.anomaly{border-color:var(--bad);color:#ffc9c9}
+  .pill.attestation{border-color:var(--good);color:#c8f4d8}
+  .pill.gap{border-color:var(--warn);color:#f6dca6}
+  .muted{color:var(--muted)} .small{font-size:12px}
+  .fields{display:grid;grid-template-columns:minmax(120px,200px) 1fr;gap:6px 14px;margin:0}
+  .fields dt{color:var(--muted);font-size:13px}
+  .fields dd{margin:0;white-space:pre-wrap;word-break:break-word}
+  .fields dd.big{font-size:17px}
+  @media (max-width:560px){.fields{grid-template-columns:1fr}.fields dd{margin-bottom:8px}}
+  .rev{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;background:var(--panel2)}
+  .rev .head{font-weight:600;font-size:14px}
+  .rev .chg{font-size:13px;margin-top:6px}
+  .rev .chg b{color:var(--muted);font-weight:600}
+  .old{text-decoration:line-through;color:#c99}
+  .photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+  .photo{background:var(--panel2);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .photo a.img{display:block;background:#000}
+  .photo img{display:block;width:100%;height:240px;object-fit:contain;background:#000}
+  .photo .noimg{min-height:120px;display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;text-align:center;padding:14px;color:var(--muted);font-size:13px}
+  .photo .noimg.flag{color:#ffd9d9;background:rgba(224,90,90,.12)}
+  .photo .meta{padding:10px 12px;font-size:12.5px}
+  .photo .meta div{margin-bottom:3px}
+  .photo .meta b{color:var(--muted);font-weight:600}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;word-break:break-all}
+  .banner{border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:14px}
+  .banner.err{background:rgba(224,90,90,.15);border:1px solid var(--bad);color:#ffd9d9}
+  .banner.warn{background:rgba(224,166,58,.14);border:1px solid var(--warn);color:#f6dca6}
+  .ok{color:#c8f4d8}
+  label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+  input{width:100%;background:#e9edf4;border:1px solid #b9c3d6;color:#141821;border-radius:10px;padding:11px 12px;font-size:16px;font-family:inherit}
+  .btn{background:var(--accent);color:#fff;border:none;border-radius:11px;padding:11px 16px;font-size:15px;font-weight:600;cursor:pointer;margin-top:12px}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink);font-size:13px;padding:8px 12px;margin:0}
+  a{color:var(--accent)}
+  .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  .toolbar .grow{flex:1}
+</style>
+</head>
+<body>
+<header>
+  <h1>Observation record</h1>
+  <div class="sub" id="sub">Loading…</div>
+</header>
+<main id="main">
+  <div class="card muted">Loading…</div>
+</main>
+
+<script>
+"use strict";
+const APP_KEY = "observer-field-log-v1";   // the field app's saved state (same site)
+const OWN_KEY = "record-view-code";        // where this page remembers the code
+
+const recordId = decodeURIComponent(location.pathname.replace(/^\/r\//, "").replace(/\/$/, ""));
+document.getElementById("sub").textContent = "Record ID " + recordId;
+document.title = "Record " + recordId.slice(0, 8);
+
+// --- small helpers ---------------------------------------------------------
+function esc(s){
+  return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function blank(v){ return v == null || String(v).trim() === ""; }
+// Sheet dates arrive as ISO strings. Show them in Wisconsin time; leave
+// anything else (free-text times like "9:42 am") exactly as written.
+function fmt(v){
+  const s = String(v == null ? "" : v);
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(s)) {
+    const d = new Date(s);
+    if (!isNaN(d)) return d.toLocaleString("en-US", {timeZone:"America/Chicago", dateStyle:"medium", timeStyle:"medium"}) + " CT";
+  }
+  return s;
+}
+function getStored(k, f){ try { return f(localStorage.getItem(k)); } catch { return ""; } }
+function savedCode(){
+  const own = getStored(OWN_KEY, v => v || "");
+  if (own) return own;
+  return getStored(APP_KEY, v => { const s = JSON.parse(v || "{}"); return s.accessCode || ""; });
+}
+function setMain(html){ document.getElementById("main").innerHTML = html; }
+
+// --- code prompt -----------------------------------------------------------
+function askForCode(message){
+  setMain(`
+    <div class="card">
+      <h2>Drafter code needed</h2>
+      ${message ? `<div class="banner err">${esc(message)}</div>` : ""}
+      <p class="small muted">This page shows the team's observation records and photos, so it needs the drafter code. This browser will remember it.</p>
+      <form id="f">
+        <label for="code">Drafter code</label>
+        <input id="code" type="password" autocomplete="current-password" autofocus>
+        <button class="btn" type="submit">Open record</button>
+      </form>
+    </div>`);
+  document.getElementById("f").onsubmit = e => {
+    e.preventDefault();
+    const c = document.getElementById("code").value.trim();
+    if (!c) return;
+    try { localStorage.setItem(OWN_KEY, c); } catch {}
+    load(c);
+  };
+}
+
+// --- load ------------------------------------------------------------------
+async function load(code){
+  setMain(`<div class="card muted">Loading record… (if the server was asleep this can take up to a minute)</div>`);
+  let r, d;
+  try {
+    r = await fetch("/api/record-view", {
+      method: "POST",
+      headers: {"content-type":"application/json"},
+      body: JSON.stringify({accessCode: code, recordId})
+    });
+    d = await r.json();
+  } catch (err) {
+    return setMain(`<div class="banner err">Couldn't reach the server: ${esc(err)}. <a href="">Try again</a>.</div>`);
+  }
+  if (r.status === 401) {
+    try { localStorage.removeItem(OWN_KEY); } catch {}
+    return askForCode("That drafter code wasn't accepted.");
+  }
+  if (!r.ok || !d.ok) {
+    return setMain(`<div class="banner err">${esc(d.error || ("Server answered " + r.status))}</div>`);
+  }
+  render(d);
+}
+
+// --- render ----------------------------------------------------------------
+const HIDE = new Set(["Record ID"]);   // already in the page header
+const BIG  = new Set(["What observed"]);
+
+function render(d){
+  const revs = d.revisions || [];
+  const latest = revs[revs.length - 1];
+  let html = `
+    <div class="toolbar">
+      <span class="grow small muted">Read-only view · the Google Sheet is the record · loaded ${esc(fmt(d.generatedAt))}</span>
+      <button class="btn ghost" onclick="load(savedCode())">Refresh</button>
+    </div>`;
+
+  if (!latest) {
+    html += `<div class="banner warn">Photos are listed for this Record ID, but no observation row was found on the main sheet.</div>`;
+  } else {
+    const type = String(latest["Obs type"] || "anomaly").toLowerCase();
+    const shown = Object.keys(latest).filter(k => !HIDE.has(k) && !blank(latest[k]));
+    const hidden = Object.keys(latest).filter(k => !HIDE.has(k) && blank(latest[k])).length;
+    html += `
+      <div class="card">
+        <h2>Latest revision · ${esc(latest["Revision"] || "v1")}</h2>
+        <div style="margin-bottom:10px">
+          <span class="pill ${esc(type)}">${esc(type)}</span>
+          ${latest["Observer"] ? `<span class="pill">${esc(latest["Observer"])}</span>` : ""}
+          ${latest["Status"] ? `<span class="pill">${esc(latest["Status"])}</span>` : ""}
+        </div>
+        <dl class="fields">
+          ${shown.map(k => `<dt>${esc(k)}</dt><dd class="${BIG.has(k) ? "big" : ""}">${esc(fmt(latest[k]))}</dd>`).join("")}
+        </dl>
+        ${hidden ? `<p class="small muted" style="margin:10px 0 0">${hidden} empty field${hidden === 1 ? "" : "s"} not shown.</p>` : ""}
+      </div>`;
+
+    html += `<div class="card"><h2>Revision history · ${revs.length} row${revs.length === 1 ? "" : "s"}</h2>`;
+    revs.forEach((row, i) => {
+      const prev = revs[i - 1];
+      let changes = "";
+      if (prev) {
+        const keys = Object.keys(row).filter(k => !["Revision","Status","Submitted"].includes(k) && String(row[k]) !== String(prev[k]));
+        changes = keys.length
+          ? keys.map(k => `<div class="chg"><b>${esc(k)}:</b> ${blank(prev[k]) ? "<span class='muted'>(blank)</span>" : `<span class="old">${esc(fmt(prev[k]))}</span>`} → ${blank(row[k]) ? "<span class='muted'>(blank)</span>" : esc(fmt(row[k]))}</div>`).join("")
+          : `<div class="chg muted">No field changes from the previous revision.</div>`;
+      } else {
+        changes = `<div class="chg muted">Original submission.</div>`;
+      }
+      html += `
+        <div class="rev">
+          <div class="head">${esc(row["Revision"] || "v1")} · ${esc(row["Status"] || "")}</div>
+          <div class="small muted">Submitted ${esc(fmt(row["Submitted"]))}${row["Observer"] ? " · " + esc(row["Observer"]) : ""}</div>
+          ${changes}
+        </div>`;
+    });
+    html += `</div>`;
+  }
+
+  const photos = d.photos || [];
+  html += `<div class="card"><h2>Photos · ${photos.length}</h2>`;
+  if (!photos.length) {
+    html += `<p class="muted small" style="margin:0">No photos are listed for this record on the Media tab.</p>`;
+  } else {
+    html += `<p class="small muted" style="margin-top:0">Each photo's fingerprint (SHA-256) was recomputed by the server from the stored file before it was listed. Viewing links expire after ${esc(d.linkMinutes)} minutes — press Refresh for fresh ones.</p><div class="photos">`;
+    photos.forEach(p => {
+      const m = p.row || {};
+      const type = String(m["Type"] || "");
+      const heic = /heic|heif/i.test(type);
+      let pic;
+      if (!p.url) {
+        pic = `<div class="noimg flag">⚠ ${esc(p.problem || "No link available.")}</div>`;
+      } else if (heic) {
+        pic = `<div class="noimg"><span>HEIC photo — some browsers can't show these inline.</span><a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer">Open / download the file</a></div>`;
+      } else {
+        pic = `<a class="img" href="${esc(p.url)}" target="_blank" rel="noopener noreferrer" title="Open full size"><img loading="lazy" src="${esc(p.url)}" alt="Photo attached to this record"></a>`;
+      }
+      const locStatus = String(m["Location"] || "");
+      const lat = m["Latitude"], lon = m["Longitude"], acc = m["Location accuracy (m)"];
+      const where = locStatus === "ok" && !blank(lat) && !blank(lon)
+        ? `${esc(lat)}, ${esc(lon)}${blank(acc) ? "" : " (±" + esc(Math.round(Number(acc))) + " m)"} · <a href="https://www.google.com/maps?q=${encodeURIComponent(lat + "," + lon)}" target="_blank" rel="noopener noreferrer">map</a>`
+        : esc(locStatus || "not recorded");
+      const sizeKb = Number(m["Size (bytes)"]) ? Math.round(Number(m["Size (bytes)"]) / 1024) + " KB" : "";
+      html += `
+        <div class="photo">
+          ${pic}
+          <div class="meta">
+            <div><b>Taken/added on phone:</b> ${esc(fmt(m["Added on phone"])) || "—"}</div>
+            <div><b>Uploaded:</b> ${esc(fmt(m["Uploaded"])) || "—"}</div>
+            <div><b>Observer:</b> ${esc(m["Observer"]) || "—"}</div>
+            <div><b>Location:</b> ${where}</div>
+            <div><b>Attached at:</b> record ${esc(m["Record revision at attach"] || "")}</div>
+            <div class="${p.url ? "ok" : ""}"><b>Fingerprint check (as listed):</b> ${esc(m["Fingerprint check"]) || "—"}</div>
+            <div><b>Type / size:</b> ${esc(type)}${sizeKb ? " · " + sizeKb : ""}</div>
+            <div><b>SHA-256:</b> <span class="mono">${esc(m["Photo SHA-256"])}</span></div>
+          </div>
+        </div>`;
+    });
+    html += `</div>`;
+  }
+  html += `</div>`;
+  setMain(html);
+  // A viewing link that has expired (page left open > 15 min) shows a note
+  // instead of a broken-image icon.
+  document.querySelectorAll(".photo img").forEach(img => img.addEventListener("error", () => {
+    const note = document.createElement("div");
+    note.className = "noimg";
+    note.textContent = "Couldn't load the image (the link may have expired — press Refresh).";
+    img.parentNode.replaceWith(note);
+  }));
+}
+
+// --- start -----------------------------------------------------------------
+if (!/^[A-Za-z0-9-]{8,64}$/.test(recordId)) {
+  setMain(`<div class="banner err">That isn't a valid Record ID.</div>`);
+} else {
+  const c = savedCode();
+  if (c) load(c); else askForCode("");
+}
+</script>
+</body>
+</html>

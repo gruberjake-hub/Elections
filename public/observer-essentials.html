@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Election Observer Essentials — Central Count</title>
+<style>
+  :root{
+    --bg:#070a11; --panel:#171f30; --panel2:#1e2740; --line:#2f3b58;
+    --ink:#e8edf7; --muted:#9aa7c4; --accent:#4f7cff;
+    --red:#ff7a7a; --redbg:rgba(224,90,90,.13);
+    --green:#63d19a; --greenbg:rgba(63,176,107,.13);
+    --amber:#f0c069; --amberbg:rgba(224,166,58,.13);
+    --blue:#7aa2ff; --bluebg:rgba(79,124,255,.13);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16.5px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-text-size-adjust:100%}
+  a{color:var(--accent)}
+  header{position:sticky;top:0;z-index:30;background:rgba(7,10,17,.92);backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);padding:calc(env(safe-area-inset-top) + 12px) 16px 0}
+  header .wrap{max-width:820px;margin:0 auto}
+  header h1{font-size:18px;margin:0;font-weight:750;letter-spacing:.2px}
+  header .sub{color:var(--muted);font-size:12.5px;margin:2px 0 10px}
+  nav{display:flex;gap:7px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none}
+  nav::-webkit-scrollbar{display:none}
+  nav a{flex:0 0 auto;font-size:12.5px;color:var(--muted);text-decoration:none;
+    border:1px solid var(--line);border-radius:999px;padding:6px 12px;background:var(--panel);white-space:nowrap}
+  nav a:active{background:var(--panel2)}
+  main{max-width:820px;margin:0 auto;padding:20px 16px 80px}
+  .hero{padding:22px 4px 8px}
+  .hero h2{font-size:26px;line-height:1.25;margin:0 0 10px;font-weight:800;letter-spacing:.2px}
+  .hero p{color:var(--muted);font-size:17px;margin:0}
+  section{background:var(--panel);border:1px solid var(--line);border-radius:16px;
+    padding:20px 20px 22px;margin:16px 0;box-shadow:0 2px 12px rgba(0,0,0,.4);scroll-margin-top:112px}
+  section h3{font-size:13px;text-transform:uppercase;letter-spacing:.7px;color:var(--accent);margin:0 0 4px;font-weight:800}
+  section h4{font-size:21px;margin:0 0 12px;font-weight:750;line-height:1.3}
+  p{margin:0 0 12px}
+  .lead{font-size:17px}
+  ul{margin:6px 0 12px;padding-left:20px} li{margin:7px 0}
+  .kv{font-weight:700;color:#fff}
+  .cite{color:var(--muted);font-size:13px;font-weight:600}
+  .call{border-radius:12px;padding:13px 15px;margin:14px 0;border:1px solid}
+  .call h5{margin:0 0 7px;font-size:14px;text-transform:uppercase;letter-spacing:.5px;font-weight:800}
+  .call.red{background:var(--redbg);border-color:var(--red)} .call.red h5{color:var(--red)}
+  .call.green{background:var(--greenbg);border-color:var(--green)} .call.green h5{color:var(--green)}
+  .call.amber{background:var(--amberbg);border-color:var(--amber)} .call.amber h5{color:var(--amber)}
+  .call.blue{background:var(--bluebg);border-color:var(--blue)} .call.blue h5{color:var(--blue)}
+  .call ul{margin:0;padding-left:18px}
+  .big{font-size:19px;font-weight:750;color:#fff;margin:4px 0 2px}
+  .myth{border-left:3px solid var(--accent);padding:2px 0 2px 14px;margin:12px 0;color:var(--muted)}
+  .myth b{color:#fff}
+  .foot{color:var(--muted);font-size:13.5px;line-height:1.55;margin-top:24px;text-align:center}
+  .pill{display:inline-block;font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 10px;margin:3px 5px 3px 0;background:var(--panel2)}
+  .four{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+  .four .c{flex:1;min-width:120px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;text-align:center;font-weight:750;color:#fff}
+  .four .c span{display:block;font-size:12px;color:var(--muted);font-weight:500;margin-top:2px}
+  .hotbar{background:linear-gradient(180deg,#20304f,#182543);border:1px solid var(--accent);border-radius:14px;padding:16px;text-align:center;margin:18px 0}
+  .hotbar .t{font-weight:750;font-size:16px} .hotbar a{font-weight:800}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>Election Observer Essentials</h1>
+    <div class="sub">Central Count · Wisconsin ch. EL 4 · the highlights, start to finish</div>
+    <nav>
+      <a href="index.html" style="background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700">↗ Open the App</a>
+      <a href="#mission">Your mission</a>
+      <a href="#who">Who's who</a>
+      <a href="#signin">Getting in</a>
+      <a href="#where">Where you stand</a>
+      <a href="#watch">What to look for</a>
+      <a href="#log">What to log</a>
+      <a href="#record">Recording</a>
+      <a href="#decorum">Decorum</a>
+      <a href="#escalate">If something happens</a>
+      <a href="#words">Words to know</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <div class="hero">
+    <h2>You watch the public parts of the count — and write down what you see.</h2>
+    <p>We're a volunteer team with one guiding principle: a fair and honest election. No party, no formal affiliation, no stake in who wins. Participate as much or as little as you like. This page is the short version of everything that matters. Trust, but verify.</p>
+  </div>
+
+  <section id="mission">
+    <h3>The whole job in one breath</h3>
+    <h4>Observe and document. Never interfere.</h4>
+    <p class="lead">Your entire role is to <span class="kv">see or hear</span> the public parts of the count and make a clean written record. You do not touch materials, direct workers, or take part. A calm, well-documented observer is the most valuable person in the room.</p>
+    <div class="four">
+      <div class="c">Who<span>role, name, wristband</span></div>
+      <div class="c">What<span>the action you saw</span></div>
+      <div class="c">When<span>exact time</span></div>
+      <div class="c">Where<span>table / ward / station</span></div>
+    </div>
+    <p class="big">Specific details build the picture. Document, document, document.</p>
+    <div class="call red">
+      <h5>The one hard line</h5>
+      Election observers <span class="kv">cannot interfere</span> in the process. You observe; you never obstruct, slow, or disrupt the count or a voter. <span class="cite">EL 4.01</span>
+    </div>
+  </section>
+
+  <section id="who">
+    <h3>Who's who in the room</h3>
+    <h4>Know who you talk to — and who you don't.</h4>
+    <ul>
+      <li><span class="kv">Designated Election Official (DEO)</span> — the person in charge of the location (at central count, usually the board of canvassers or the official they designate). <span class="kv">This is the only person you speak to</span> with questions or concerns. Be polite; write down their name. <span class="cite">EL 4.02(6)</span></li>
+      <li><span class="kv">Election inspectors / workers</span> — the people doing the counting and handling ballots. <span class="kv">Do not engage them.</span> Route everything through the DEO.</li>
+      <li><span class="kv">You, the observer</span> — a member of the public who has signed in to observe. You are not required to represent any organization, and you do not declare a party. <span class="cite">EL 4.02(13), 4.04(1)</span></li>
+    </ul>
+    <div class="myth"><b>Myth:</b> "I have to be a Milwaukee resident to observe at Central Count." <b>False.</b> Any member of the public who signs in may observe — residency is not required.</div>
+  </section>
+
+  <section id="signin">
+    <h3>Getting in the door</h3>
+    <h4>Sign in, show ID, get your badge.</h4>
+    <ul>
+      <li>Tell the DEO you're there to observe. Be friendly — say you're trained and there only to observe and document, not to interrupt.</li>
+      <li><span class="kv">Sign the observer log</span> and <span class="kv">show photo ID</span> (it just has to reasonably match your name — it does <em>not</em> need to meet voter-ID standards). Print your name, address, and organization if you have one. <span class="cite">EL 4.04(1)</span></li>
+      <li>Get your <span class="kv">observer badge or tag</span> and wear it. <span class="kv">You do not declare a party affiliation.</span> <span class="cite">EL 4.03(2)(c)</span></li>
+      <li>Record the <span class="kv">time you arrive and the time you leave.</span></li>
+    </ul>
+  </section>
+
+  <section id="where">
+    <h3>Where you stand &amp; what you may see</h3>
+    <h4>Close enough to see — 3 to 8 feet.</h4>
+    <p>Your observation area must be <span class="kv">no less than 3 feet and no more than 8 feet</span> from the key tables (where names are announced, where people register, and where ballots are remade). Being able to objectively show that distance is valuable — it's a common point of friction. <span class="cite">EL 4.03(1)(b)</span></p>
+    <div class="call green">
+      <h5>You have the right to…</h5>
+      <ul>
+        <li>Observe <span class="kv">all counting</span> at the central count location. <span class="cite">EL 4.05(6)</span></li>
+        <li>Observe <span class="kv">rejected certificate envelopes</span> that are set aside. <span class="cite">EL 4.03(7)</span></li>
+        <li>Observe the <span class="kv">poll lists</span>, minus confidential portions. <span class="cite">EL 4.03(8)</span></li>
+        <li>Ask the official to <span class="kv">repeat a name or address once.</span> <span class="cite">EL 4.03(6)</span></li>
+        <li>One warning before any removal — and any removal must be documented and reported to the WEC. <span class="cite">EL 4.03(11)</span></li>
+      </ul>
+    </div>
+    <p class="cite">You may <span class="kv">not</span> handle original documents (EL 4.03(9)) or view confidential information (EL 4.03(10)).</p>
+  </section>
+
+  <section id="watch">
+    <h3>What to look for</h3>
+    <h4>The main issues, at the count.</h4>
+    <p>These are the situations worth your full attention. If you see one, note it carefully — and find a team leader.</p>
+    <div class="call red">
+      <h5>Red flags — central count</h5>
+      <ul>
+        <li>Absentee ballots received or accepted <span class="kv">after 8:00 p.m.</span></li>
+        <li>Ballot reconstruction/remaking <span class="kv">not done by two bi-partisan inspectors</span> — verify the remake number on <span class="kv">both</span> ballots.</li>
+        <li>A certificate envelope that's <span class="kv">incomplete</span> but counted anyway (see below).</li>
+        <li>Envelope <span class="kv">name/address not on the voter list</span> — it should not be counted.</li>
+        <li>Names <span class="kv">added to the voter list</span> (this should not happen).</li>
+        <li>Clerk initials missing on an envelope → still counted, <span class="kv">but must be recorded on the EL 104.</span> Note it.</li>
+        <li>The <span class="kv">time ballots are distributed</span> to the tables by an official.</li>
+      </ul>
+    </div>
+    <div class="call amber">
+      <h5>Certificate envelope — when it's incomplete</h5>
+      <ul>
+        <li><span class="kv">Voter signature:</span> any mark counts (X, print, scribble). No date required.</li>
+        <li><span class="kv">Witness signature/printed name:</span> signed <span class="kv">or</span> printed is fine — either one. <span class="kv">Neither → incomplete, cannot be processed.</span></li>
+        <li><span class="kv">Witness address:</span> needs street number + street name (or "same"/ditto). <span class="kv">P.O. Box, city-only, or zip-only → cannot count.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="log">
+    <h3>What to log</h3>
+    <h4>Every entry, every time.</h4>
+    <p>The record you make is the whole point. Capture only what you saw or heard — <span class="kv">actions, not conclusions</span>. For each note:</p>
+    <div class="call blue">
+      <h5>Capture</h5>
+      <ul>
+        <li><span class="kv">Time</span> (always) and <span class="kv">location</span> — table / ward / station</li>
+        <li>Voter <span class="kv">name &amp; number</span>, ward number, when applicable</li>
+        <li><span class="kv">What you saw</span> — the specific action</li>
+        <li><span class="kv">Who</span> — worker/inspector name if you can get it, plus <span class="kv">wristband color</span></li>
+        <li><span class="kv">Witnesses</span> present</li>
+        <li>Was it recorded on the inspectors' <span class="kv">EL 104</span>?</li>
+        <li>Any <span class="kv">objection</span> you raised, to whom, and their response</li>
+        <li><span class="kv">Evidence</span> and who's holding it</li>
+      </ul>
+    </div>
+    <p>The app does this for you — the <span class="kv">Log</span> tab prompts every field, and <span class="kv">Submit to team</span> sends it to the shared record. When you're unsure whether something matters, use <span class="kv">Check the rules</span> — and when still in doubt, <span class="kv">log it.</span></p>
+  </section>
+
+  <section id="record">
+    <h3>Recording &amp; devices</h3>
+    <h4>At central count, cameras are allowed — with limits.</h4>
+    <p>Central count is <span class="kv">not</span> a polling place, so photographing and recording the location <span class="kv">is</span> permitted here. (That's different from inside a polling room, where recording is barred until the canvass.) <span class="cite">EL 4.05(6)</span></p>
+    <div class="call amber">
+      <h5>The limits that still apply</h5>
+      <ul>
+        <li><span class="kv">Never</span> record passwords or log-ins on tabulators, computers, or machines.</li>
+        <li>Hidden videotaping is <span class="kv">illegal in Wisconsin</span> unless you notify the person.</li>
+        <li>Audio recording is OK <span class="kv">only if you are part of the conversation.</span></li>
+        <li>Texting is fine; <span class="kv">leave the room to take a phone call.</span></li>
+        <li>If you can't get a name, a discreet photo is better than nothing.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="decorum">
+    <h3>Decorum &amp; handling people</h3>
+    <h4>Calm. Controlled. Constructive. Confident.</h4>
+    <p class="lead">Your own emotional state is the single most important factor for doing this well. Most people you meet are fair, professional, and competent. A few won't be — and your job doesn't change either way.</p>
+    <ul>
+      <li><span class="kv">Speak only to the DEO</span> — not the workers, not the press, not the voters.</li>
+      <li><span class="kv">Never initiate conversation with a voter.</span> If one speaks to you, respond briefly and point them to an official. <span class="cite">EL 4.04(13)</span></li>
+      <li>No discussing candidates, parties, or ballot questions. No campaign materials or electioneering. Keep your voice low. <span class="cite">EL 4.04(9)–(11)</span></li>
+      <li>Be conversant in the rules and follow both their <span class="kv">letter and spirit</span> — precisely, and without heat.</li>
+    </ul>
+    <div class="call blue">
+      <h5>A line that always works</h5>
+      "I'm just here to observe and help have a fair and transparent election."
+    </div>
+    <p class="cite">Focus on the purpose. Lean on your team. Use your resources. You have a right to be there as long as you follow the rules.</p>
+  </section>
+
+  <section id="escalate">
+    <h3>If something happens</h3>
+    <h4>Document first. Then find a team leader.</h4>
+    <ul>
+      <li>See a main issue or anything major? <span class="kv">Find a team leader</span> — then record everything you can.</li>
+      <li>Note whether the inspectors recorded the incident on their <span class="kv">EL 104</span>.</li>
+      <li>Use the app: <span class="kv">Check the rules</span> to gut-check it, <span class="kv">Add incident</span> to log the facts, <span class="kv">Submit to team</span> to send it in.</li>
+      <li>A documented violation may become a formal complaint later — which is why clean, first-person facts matter so much.</li>
+    </ul>
+    <div class="hotbar">
+      <div class="t">Election Integrity Hotline</div>
+      <div>Text or call: <a href="tel:+16086996950">(608) 699-6950</a></div>
+    </div>
+  </section>
+
+  <section id="words">
+    <h3>Words to know</h3>
+    <h4>The vocabulary, briefly.</h4>
+    <ul>
+      <li><span class="kv">Observe</span> — to see or hear. It does <em>not</em> include handling materials. <span class="cite">EL 4.02(12)</span></li>
+      <li><span class="kv">Observable location</span> — where you're allowed to watch: here, the central count location. <span class="cite">EL 4.02(11)</span></li>
+      <li><span class="kv">Designated Election Official (DEO)</span> — the official in charge you may address. <span class="cite">EL 4.02(6)</span></li>
+      <li><span class="kv">Confidential information</span> — voted ballots and personal voter data you may not view. <span class="cite">EL 4.02(5)</span></li>
+      <li><span class="kv">Electioneering</span> — promoting a candidate, party, or ballot position; prohibited for observers. <span class="cite">EL 4.04(9)</span></li>
+      <li><span class="kv">EL 104</span> — the inspectors' statement where the counting team records issues (machine issues, ballot additions, remade/late ballots, totals, balance).</li>
+      <li><span class="kv">Certificate envelope</span> — the absentee ballot's outer envelope carrying the voter and witness signatures and address.</li>
+    </ul>
+  </section>
+
+  <div style="text-align:center;margin-top:22px">
+    <a href="index.html" style="display:inline-block;background:var(--accent);color:#fff;text-decoration:none;font-weight:750;font-size:16px;padding:13px 22px;border-radius:12px">Open the Observer App →</a>
+  </div>
+
+  <div class="foot">
+    Know the basics · stay sharp · teamwork · keep learning.<br>
+    This is a highlights guide drawn from Wisconsin Admin. Code ch. EL 4 and your organization's central-count observer guidance. It's a plain-language restatement, not legal advice, and doesn't replace the rule text. When in doubt, capture the facts and log it.
+  </div>
+
+</main>
+
+</body>
+</html>
