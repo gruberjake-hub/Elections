@@ -130,6 +130,11 @@
       <p class="hint" id="submitHint">Pushes your new observations to the shared team record. They stay on your phone too.</p>
     </div>
     <div class="card">
+      <h2>💬 Team chat</h2>
+      <a class="btn" id="teamChatBtn" href="#" target="_blank" rel="noopener" onclick="return openTeamChat(event)" style="text-decoration:none">Open team chat (Telegram)</a>
+      <p class="hint">Messages in the team chat are kept as team records. Saw something firsthand? Post it there if you like — <b>and log it here too</b>. The app entry is what goes in a complaint.</p>
+    </div>
+    <div class="card">
       <h2>Your notes (backup)</h2>
       <div class="row">
         <button class="btn ghost small" onclick="exportNotes()">⬇ Export notes (JSON)</button>
@@ -532,6 +537,7 @@ function hydrate(){
   setVal("respondent",state.respondent); setVal("relief",state.relief);
   setVal("filingTarget",state.filingTarget); setVal("accessCode",state.accessCode);
   setVal("teamCode",state.teamCode);
+  applyTeamChatLink(); fetchTeamChatLink();   // refresh quietly in the background
   setFilingMode(state.filingMode, true);
   setRole(state.role || "observer", true);
   renderLog();
@@ -1330,11 +1336,50 @@ async function sendPhotos(){
   return {uploaded, problems};
 }
 
+/* ========================= team chat ==================================
+ * The button is a real link (an <a>), not a script that navigates later:
+ * phones only reliably hand a t.me link to the Telegram app when the person
+ * taps an actual link. So we fetch the invite link AHEAD of time (needs the
+ * team code), cache it on this device, and put it in the button's href.
+ * If it isn't cached yet, the first tap asks for it, then opens it.
+ * ===================================================================== */
+function applyTeamChatLink(){
+  const a=document.getElementById("teamChatBtn"); if(!a) return;
+  a.href = state.teamChatUrl || "#";
+}
+async function fetchTeamChatLink(){
+  if(!state.teamCode) return null;
+  try{
+    const r=await fetch("/api/team-chat",{method:"POST",headers:{"content-type":"application/json"},
+      body:JSON.stringify({teamCode:state.teamCode})});
+    const d=await r.json().catch(()=>({}));
+    if(r.ok && d.url){ state.teamChatUrl=d.url; persist(); applyTeamChatLink(); return d.url; }
+    if(r.status===401){ state.teamChatUrl=""; persist(); applyTeamChatLink(); }
+    return {error: r.status===401 ? "The team code wasn't accepted — check it under Setup." : (d.error||"Couldn't get the team chat link.")};
+  }catch(e){ return {error:"Couldn't reach the server — try again when you have signal."}; }
+}
+function openTeamChat(ev){
+  if(state.teamChatUrl) return true;            // cached: let the link open normally
+  ev.preventDefault();
+  (async()=>{
+    if(!state.teamCode){
+      const c=(prompt("Enter your team code to open the team chat (you only need to do this once):")||"").trim();
+      if(!c) return;
+      state.teamCode=c; setVal("teamCode",c); persist();
+    }
+    const got=await fetchTeamChatLink();
+    if(typeof got==="string"){ toast("Got it — tap the button again to open the chat"); }
+    else if(got && got.error){ toast(got.error); }
+  })();
+  return false;
+}
+
 /* ========================= misc ======================================= */
 async function checkHealth(){
   const out=document.getElementById("healthOut"); out.textContent="Checking…";
   try{ const r=await fetch("/health"); const d=await r.json();
-    out.innerHTML=`Server OK · draft model <b>${esc(d.model)}</b> · check model <b>${esc(d.checkModel||"—")}</b> · API key ${d.apiKeyConfigured?"configured ✅":"MISSING ❌"} · drafter code ${d.accessCodeRequired?"required":"off"} · team code ${d.teamCodeRequired?"required":"off"} · central collection ${d.centralCollection?"on ✅":"off"} · drafter read-back ${d.readBack?"on ✅":"off"}`;
+    const chat = ` · team chat capture ${d.chatCapture?"on ✅":"off"} · team chat button ${d.teamChatButton?"on ✅":"off"}`;
+    out.innerHTML=`Server OK · draft model <b>${esc(d.model)}</b> · check model <b>${esc(d.checkModel||"—")}</b> · API key ${d.apiKeyConfigured?"configured ✅":"MISSING ❌"} · drafter code ${d.accessCodeRequired?"required":"off"} · team code ${d.teamCodeRequired?"required":"off"} · central collection ${d.centralCollection?"on ✅":"off"} · drafter read-back ${d.readBack?"on ✅":"off"}${chat}`;
   }catch(e){ out.textContent="Could not reach the server."; }
 }
 async function wipe(){

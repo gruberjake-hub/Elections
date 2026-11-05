@@ -49,6 +49,17 @@ const SHEET_READ_TOKEN = process.env.SHEET_READ_TOKEN || "";
 // The phone never sees these: the server uses them only to SIGN short-lived
 // upload links (see "Photo storage" section below).
 const R2 = r2Config(process.env);
+// Team chat capture (Telegram). The bot pushes every group message to
+// /api/chat-hook; the server checks the secret, keeps only allow-listed group
+// chats, translates the message into a standard Chat row, and sends it to the
+// Sheet's "Chat" tab. The bot TOKEN is not needed here in v1 — only the setup
+// tool (tools/telegram-setup.js) uses it, from your local .env.
+const TELEGRAM_WEBHOOK_SECRET = process.env.TELEGRAM_WEBHOOK_SECRET || "";
+const TELEGRAM_CHAT_IDS = (process.env.TELEGRAM_CHAT_IDS || "")
+  .split(",").map((s) => s.trim()).filter(Boolean);
+// The group's invite link, handed to the app's "Team chat" button — but only
+// to someone who has the team code (the app itself is on the open internet).
+const TEAM_CHAT_URL = process.env.TEAM_CHAT_URL || "";
 const PORT = process.env.PORT || 3000;
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_VERSION = "2023-06-01";
@@ -90,6 +101,11 @@ const server = http.createServer(async (req, res) => {
         photoStorage: R2.configured,
         // Record view (/r/<RecordID>): needs the drafter code AND read-back.
         recordView: Boolean(ACCESS_CODE && SHEET_WEBHOOK_URL && SHEET_READ_TOKEN),
+        // Team chat: capture = the Telegram webhook can record to the Chat tab;
+        // teamChatButton = the app's "Team chat" button has a link to hand out.
+        chatCapture: Boolean(TELEGRAM_WEBHOOK_SECRET && TELEGRAM_CHAT_IDS.length && SHEET_WEBHOOK_URL),
+        chatGroups: TELEGRAM_CHAT_IDS.length,
+        teamChatButton: Boolean(TEAM_CHAT_URL),
       });
     }
 
@@ -136,6 +152,16 @@ const server = http.createServer(async (req, res) => {
       return await handleMedia(req, res);
     }
 
+    // Team chat capture: Telegram delivers each group message here.
+    if (req.method === "POST" && req.url === "/api/chat-hook") {
+      return await handleChatHook(req, res);
+    }
+
+    // Team chat button: hands the group's invite link to team members.
+    if (req.method === "POST" && req.url === "/api/team-chat") {
+      return await handleTeamChat(req, res);
+    }
+
     // Everything else: serve a static file from /public.
     if (req.method === "GET") {
       return serveStatic(req, res);
@@ -159,7 +185,9 @@ server.listen(PORT, () => {
   console.log(`  Rules-check model:  ${CHECK_MODEL}`);
   console.log(`  Team code gate:     ${TEAM_CODE ? "on" : "off"}`);
   console.log(`  Photo storage (R2): ${R2.configured ? "on (bucket " + R2.bucket + ")" : "off"}`);
-  console.log(`  Record view (/r/):  ${ACCESS_CODE && SHEET_WEBHOOK_URL && SHEET_READ_TOKEN ? "on" : "off — needs ACCESS_CODE + read-back"}\n`);
+  console.log(`  Record view (/r/):  ${ACCESS_CODE && SHEET_WEBHOOK_URL && SHEET_READ_TOKEN ? "on" : "off — needs ACCESS_CODE + read-back"}`);
+  console.log(`  Team chat capture:  ${TELEGRAM_WEBHOOK_SECRET && TELEGRAM_CHAT_IDS.length && SHEET_WEBHOOK_URL ? "on (" + TELEGRAM_CHAT_IDS.length + " Telegram group(s))" : "off — needs TELEGRAM_WEBHOOK_SECRET + TELEGRAM_CHAT_IDS + SHEET_WEBHOOK_URL"}`);
+  console.log(`  Team chat button:   ${TEAM_CHAT_URL ? "on" : "off — needs TEAM_CHAT_URL"}\n`);
 });
 
 // ===========================================================================
@@ -1313,6 +1341,284 @@ async function sheetRead(action, recordId) {
 function revNumber(v) {
   return parseInt(String(v || "v1").replace(/[^0-9]/g, ""), 10) || 1;
 }
+
+// ===========================================================================
+// Team chat capture (Telegram)
+// ---------------------------------------------------------------------------
+// HOW IT FLOWS
+//   Someone posts in the team's Telegram group
+//     -> Telegram POSTs that message (an "update") to /api/chat-hook
+//     -> we check the secret header (proves it's really Telegram calling)
+//     -> we keep it only if the group is on TELEGRAM_CHAT_IDS
+//     -> the Telegram ADAPTER (telegramToChatRow) turns it into one standard
+//        Chat row — the same 9 columns the Nov 3 group-text import produced
+//     -> we send the row to the Apps Script, which appends it to the Chat tab
+//     -> only when the Sheet confirms do we answer Telegram 200 OK.
+//
+// WHY THE 200 MATTERS: if we answer anything else, Telegram keeps the message
+// and tries again later (for about a day). So a Sheet hiccup delays a row
+// instead of losing it. Retries can't create duplicates: every row carries a
+// Message ID and the Apps Script skips one it has already written.
+//
+// THE CHAT FIREWALL: chat rows are COMMUNICATIONS — firsthand fact, hearsay,
+// opinion and logistics mixed together. They go to the Chat tab for the
+// composite timeline ONLY: never into the observation record (Sheet1), never
+// to the drafter as fact. Nothing here touches Sheet1.
+//
+// PLATFORM-NEUTRAL: only telegramToChatRow() knows Telegram's message format.
+// A different platform later = a new adapter producing the same CHAT_COLUMNS.
+// ===========================================================================
+
+// Must match CHAT_COLUMNS in tools/import-sms.js exactly — same tab, same header.
+const CHAT_COLUMNS = [
+  "Recorded (server time)",
+  "Sent (platform time)",
+  "Platform",
+  "Chat",
+  "Sender",
+  "Sender ID",
+  "Message",
+  "Attachment",
+  "Message ID",
+];
+
+async function handleChatHook(req, res) {
+  // Not configured -> refuse. (If the webhook was never registered, Telegram
+  // isn't calling anyway; this just keeps the endpoint shut to everyone else.)
+  if (!TELEGRAM_WEBHOOK_SECRET) {
+    return sendJSON(res, 503, { error: "Chat capture is not configured (TELEGRAM_WEBHOOK_SECRET)." });
+  }
+
+  // 1. Authenticity. When the webhook is registered with a secret_token,
+  //    Telegram sends it back in this header on EVERY delivery. No match = not
+  //    Telegram (or not our bot) -> reject. Compared in constant time so the
+  //    response timing can't leak how much of a guess was right.
+  const got = String(req.headers["x-telegram-bot-api-secret-token"] || "");
+  if (!sameSecret(got, TELEGRAM_WEBHOOK_SECRET)) {
+    return sendJSON(res, 401, { error: "Bad or missing secret." });
+  }
+
+  const body = await readBody(req);
+  let update;
+  try {
+    update = JSON.parse(body || "{}");
+  } catch {
+    // Malformed from Telegram itself would be bizarre; a retry won't fix it.
+    return sendJSON(res, 200, { ok: true, ignored: "not JSON" });
+  }
+
+  // 2. Which kinds of update we record. Anything else -> say OK and drop it
+  //    (answering an error would make Telegram retry it for a day, for nothing).
+  const isEdit = Boolean(update.edited_message);
+  const msg = update.message || update.edited_message;
+  if (!msg || !msg.chat) {
+    return sendJSON(res, 200, { ok: true, ignored: "not a message" });
+  }
+
+  // 3. Allow-list. Anyone can add a bot to their own group; without this, any
+  //    stranger's group could write rows into the team record. The log line
+  //    is also how you FIND your group's ID during setup.
+  const chatId = String(msg.chat.id);
+  if (!TELEGRAM_CHAT_IDS.includes(chatId)) {
+    console.log(`chat-hook: ignoring message from chat ${chatId} "${msg.chat.title || msg.chat.type}" — not in TELEGRAM_CHAT_IDS`);
+    return sendJSON(res, 200, { ok: true, ignored: "chat not allowed" });
+  }
+
+  // Telegram sometimes upgrades a basic group to a "supergroup", which CHANGES
+  // its chat ID. Every later message arrives under the new ID — and would be
+  // ignored until that ID is added. Shout about it in the logs (and record it).
+  if (msg.migrate_to_chat_id) {
+    console.error(
+      `chat-hook: WARNING — group ${chatId} was upgraded and is now chat ${msg.migrate_to_chat_id}. ` +
+      `Add ${msg.migrate_to_chat_id} to TELEGRAM_CHAT_IDS on Render NOW or new messages will be dropped.`
+    );
+  }
+
+  // 4. Translate (the adapter) and write.
+  const row = telegramToChatRow(msg, isEdit, new Date());
+  const result = await writeChatRows([row]);
+  if (result.error) {
+    // Non-200 on purpose: Telegram will redeliver this message later.
+    console.error("chat-hook: Sheet write failed, Telegram will retry:", result.error);
+    return sendJSON(res, 502, { error: result.error });
+  }
+  return sendJSON(res, 200, { ok: true });
+}
+
+// THE TELEGRAM ADAPTER. Pure function: Telegram message in, Chat row out.
+// (Pure = no network, no clock unless passed in — so it's easy to test.)
+function telegramToChatRow(msg, isEdit, now) {
+  const chatId = String(msg.chat.id);
+  const idBase = `tg:${chatId}:${msg.message_id}`;
+
+  // Sent time: for an edit, when it was edited (the edit is its own event).
+  const sentUnix = isEdit && msg.edit_date ? msg.edit_date : msg.date;
+  const sent = sentUnix ? new Date(sentUnix * 1000).toISOString() : "";
+
+  // Sender: the person's name (+ @username if they have one). Anonymous group
+  // admins post "as the group" — then Telegram gives sender_chat instead.
+  let sender = "", senderId = "";
+  if (msg.sender_chat) {
+    sender = msg.sender_chat.title || "(group)";
+    senderId = String(msg.sender_chat.id);
+  } else if (msg.from) {
+    sender = [msg.from.first_name, msg.from.last_name].filter(Boolean).join(" ") || "(no name)";
+    if (msg.from.username) sender += ` (@${msg.from.username})`;
+    if (msg.from.is_bot) sender += " [bot]";
+    senderId = String(msg.from.id);
+  }
+
+  // Message text, with context markers in [brackets] so a reader of the
+  // timeline can tell an edit, a reply or a forward from an original post.
+  // A forward matters especially: it is someone ELSE's words — hearsay.
+  const marks = [];
+  if (isEdit) marks.push(`[edit of ${idBase}]`);
+  if (msg.reply_to_message) marks.push(`[reply to tg:${chatId}:${msg.reply_to_message.message_id}]`);
+  const fwd = forwardedFrom(msg);
+  if (fwd) marks.push(`[forwarded from ${fwd}]`);
+
+  const parts = [];
+  if (msg.text) parts.push(msg.text);
+  if (msg.caption) parts.push(msg.caption);
+  parts.push(...serviceNotes(msg));
+
+  // Attachments. v1 records WHAT was attached plus Telegram's file_id (the
+  // handle needed to download it later). Next layer: download -> SHA-256 ->
+  // R2, giving "image/jpeg sha256:<hash>" like app photos and the SMS import.
+  const attach = [];
+  const add = (mime, f) => f && f.file_id && attach.push(`${mime} tg-file:${f.file_id}`);
+  if (Array.isArray(msg.photo) && msg.photo.length) {
+    add("image/jpeg", msg.photo[msg.photo.length - 1]); // last = largest size
+  }
+  if (msg.document) {
+    add(msg.document.mime_type || "application/octet-stream", msg.document);
+    if (msg.document.file_name) parts.push(`[file: ${msg.document.file_name}]`);
+  }
+  if (msg.video) add(msg.video.mime_type || "video/mp4", msg.video);
+  if (msg.video_note) add("video/mp4", msg.video_note);
+  if (msg.animation && !msg.document) add(msg.animation.mime_type || "video/mp4", msg.animation);
+  if (msg.voice) add(msg.voice.mime_type || "audio/ogg", msg.voice);
+  if (msg.audio) add(msg.audio.mime_type || "audio/mpeg", msg.audio);
+
+  const message = marks.concat(parts).join(" ").trim();
+
+  return [
+    now.toISOString(),
+    sent,
+    "telegram",
+    msg.chat.title || chatId,
+    sender,
+    senderId,
+    message,
+    attach.join("; "),
+    // Stable ID: a redelivered message gets the same ID and is skipped by the
+    // Sheet. An edit gets its own ID (suffix = edit time) so every version
+    // is kept — append-only, never overwritten.
+    isEdit ? `${idBase}:e${msg.edit_date || 0}` : idBase,
+  ];
+}
+
+// Who a forwarded message originally came from (newer and older API shapes).
+function forwardedFrom(msg) {
+  const o = msg.forward_origin;
+  if (o) {
+    if (o.type === "user" && o.sender_user) {
+      return [o.sender_user.first_name, o.sender_user.last_name].filter(Boolean).join(" ");
+    }
+    if (o.type === "hidden_user") return o.sender_user_name || "hidden user";
+    if (o.chat) return o.chat.title || "a chat";
+    return "elsewhere";
+  }
+  if (msg.forward_from) return [msg.forward_from.first_name, msg.forward_from.last_name].filter(Boolean).join(" ");
+  if (msg.forward_sender_name) return msg.forward_sender_name;
+  if (msg.forward_from_chat) return msg.forward_from_chat.title || "a chat";
+  return "";
+}
+
+// Non-text events, written as [bracketed notes] so nothing silently vanishes.
+function serviceNotes(msg) {
+  const n = [];
+  const name = (u) => [u.first_name, u.last_name].filter(Boolean).join(" ");
+  if (msg.new_chat_members) n.push(`[joined: ${msg.new_chat_members.map(name).join(", ")}]`);
+  if (msg.left_chat_member) n.push(`[left: ${name(msg.left_chat_member)}]`);
+  if (msg.new_chat_title) n.push(`[group renamed to: ${msg.new_chat_title}]`);
+  if (msg.group_chat_created || msg.supergroup_chat_created) n.push("[group created]");
+  if (msg.migrate_to_chat_id) n.push(`[group upgraded — new chat ID ${msg.migrate_to_chat_id}]`);
+  if (msg.migrate_from_chat_id) n.push(`[group upgraded — old chat ID ${msg.migrate_from_chat_id}]`);
+  if (msg.pinned_message) n.push(`[pinned tg:${msg.chat.id}:${msg.pinned_message.message_id}]`);
+  if (msg.venue) n.push(`[venue: ${msg.venue.title}, ${msg.venue.address}]`);
+  if (msg.location) {
+    const l = msg.location;
+    n.push(`[location: ${l.latitude}, ${l.longitude}${l.horizontal_accuracy ? ` ±${Math.round(l.horizontal_accuracy)}m` : ""}${l.live_period ? " (live)" : ""}]`);
+  }
+  if (msg.contact) n.push(`[contact card: ${name(msg.contact)}]`); // phone number deliberately not copied
+  if (msg.poll) n.push(`[poll: ${msg.poll.question}]`);
+  if (msg.sticker) n.push(`[sticker ${msg.sticker.emoji || ""}]`.replace(" ]", "]"));
+  if (msg.dice) n.push(`[dice ${msg.dice.emoji} ${msg.dice.value}]`);
+  return n;
+}
+
+// Send Chat rows to the Apps Script and insist on proof they were written.
+// Same reply verification as /api/submit, plus: the reply must carry a
+// `recorded` list — a script WITHOUT the Chat branch would otherwise answer
+// from its observation path (its schema guard refuses, but never trust luck).
+async function writeChatRows(rows) {
+  if (!SHEET_WEBHOOK_URL) return { error: "No SHEET_WEBHOOK_URL set." };
+  let r;
+  try {
+    r = await fetch(SHEET_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      // chatHeader/chatRows, NOT header/rows, on purpose: an out-of-date
+      // Apps Script (no Chat branch) ignores `kind` and appends `rows` to the
+      // OBSERVATION sheet — and if that sheet were ever empty (as during a
+      // schema rotation), it would also write `header` there. Unfamiliar field
+      // names mean an old script writes nothing at all. Chat firewall, enforced.
+      body: JSON.stringify({ kind: "chat", chatHeader: CHAT_COLUMNS, chatRows: rows }),
+    });
+  } catch (err) {
+    return { error: "Could not reach the Google Sheet web app (" + String(err) + ")." };
+  }
+  const replyText = await r.text();
+  let reply = null;
+  try { reply = JSON.parse(replyText); } catch { /* handled below */ }
+  if (!r.ok || !reply || reply.ok !== true) {
+    return {
+      error: reply && reply.error
+        ? "The Google Sheet refused the chat rows: " + reply.error
+        : "The Google Sheet web app did not confirm the chat rows (HTTP " + r.status + "): " + safeTrim(replyText, 200),
+    };
+  }
+  if (!Array.isArray(reply.recorded)) {
+    return { error: "The Google Sheet script is out of date (no Chat tab support). Deploy the new google-apps-script.gs as a New version." };
+  }
+  return { ok: true, recorded: reply.recorded };
+}
+
+// Constant-time secret comparison. Hashing both sides first makes them the
+// same length, which timingSafeEqual requires.
+function sameSecret(a, b) {
+  const ha = crypto.createHash("sha256").update(String(a)).digest();
+  const hb = crypto.createHash("sha256").update(String(b)).digest();
+  return crypto.timingSafeEqual(ha, hb) && String(a).length > 0;
+}
+
+// The app's "Team chat" button asks here for the group's invite link. Gated by
+// the team code: the app is public, and the invite link is the key to the room.
+async function handleTeamChat(req, res) {
+  const body = await readBody(req);
+  let payload;
+  try { payload = JSON.parse(body || "{}"); } catch { payload = {}; }
+  if (TEAM_CODE && payload.teamCode !== TEAM_CODE) {
+    return sendJSON(res, 401, { error: "Wrong or missing team code. Enter it under Setup." });
+  }
+  if (!TEAM_CHAT_URL) {
+    return sendJSON(res, 501, { error: "No team chat link is set on the server yet (TEAM_CHAT_URL)." });
+  }
+  return sendJSON(res, 200, { ok: true, url: TEAM_CHAT_URL });
+}
+
+
 
 // ===========================================================================
 // Small helpers

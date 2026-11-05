@@ -7,6 +7,9 @@
  *   WRITE (doPost): observers' "Submit to team" appends rows to the sheet.
  *                   Photo records ({kind:"media"}) go to a separate "Media"
  *                   tab instead — the main sheet's columns never change.
+ *                   Team-chat messages ({kind:"chat"}, from the Telegram bot
+ *                   via the server) go to a separate "Chat" tab — never the
+ *                   observation sheet (the chat firewall).
  *   READ  (doGet):  drafters' "Load from team repo" and the record-view page
  *                   (/r/<RecordID>) pull rows back out — observations and
  *                   Media-tab photo rows — but ONLY when a matching secret
@@ -33,12 +36,20 @@ var READ_TOKEN = "";
 // Name of the tab that holds one row per photo. Created automatically.
 var MEDIA_TAB = "Media";
 
+// Name of the tab that holds one row per team-chat message. Created
+// automatically (at the END of the tab list) if it doesn't exist. Same tab the
+// Nov 3 group-text import loads into — same 9-column header.
+var CHAT_TAB = "Chat";
+
 function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
 
     // Photo records go to their own tab (see writeMedia below).
     if (data.kind === "media") return writeMedia(data);
+
+    // Team-chat messages go to their own tab (see writeChat below).
+    if (data.kind === "chat") return writeChat(data);
 
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
 
@@ -129,7 +140,7 @@ function rowsAsObjects(sheet, only) {
 function headersMatch(a, b) {
   if (!a || !b || a.length !== b.length) return false;
   for (var i = 0; i < a.length; i++) {
-    if (String(a[i]).trim() !== String(b[i]).trim()) return false;
+    if (cleanCell(a[i]) !== cleanCell(b[i])) return false;
   }
   return true;
 }
@@ -180,6 +191,75 @@ function writeMedia(data) {
     if (key) recorded.push(key);   // listed now, whether just added or already there
   }
   return json({ ok: true, recorded: recorded });
+}
+
+// Trim, and drop an invisible byte-order mark (U+FEFF) a CSV import can leave
+// glued to the first header cell — it would otherwise fail the header match.
+function cleanCell(v) {
+  return String(v).replace(/^\uFEFF/, "").trim();
+}
+
+// ---------------------------------------------------------------------------
+// CHAT tab: one row per team-chat message (Telegram now; the Nov 3 SMS import
+// uses the same tab). Same rules as Media: header written once, schema guard,
+// append-only, and a message already listed (same Message ID) is never listed
+// twice — Telegram redelivers when it doesn't hear back, and that must not
+// create duplicates. A lock makes "check for duplicate, then append" one step,
+// so two deliveries arriving at once can't both pass the check.
+// ---------------------------------------------------------------------------
+function writeChat(data) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000); // wait up to 20s for another write to finish
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var tab = ss.getSheetByName(CHAT_TAB);
+    if (!tab) tab = ss.insertSheet(CHAT_TAB, ss.getSheets().length); // at the END, never first
+
+    // (chatHeader/chatRows rather than header/rows: see writeChatRows in
+    // server.js — an older script must never mistake these for observations.)
+    var header = data.chatHeader || [];
+    if (!header.length) return json({ ok: false, error: "no chatHeader sent" });
+    if (tab.getLastRow() === 0) {
+      tab.appendRow(header);
+    } else {
+      var existing = tab.getRange(1, 1, 1, tab.getLastColumn()).getValues()[0];
+      if (!headersMatch(existing, header)) {
+        return json({
+          ok: false,
+          error:
+            "schema mismatch on the " + CHAT_TAB + " tab: it has " + existing.length +
+            " columns but the server sent " + header.length +
+            ". Check the tab's header row matches the 9 Chat columns exactly."
+        });
+      }
+    }
+
+    var idCol = header.indexOf("Message ID");
+    var seen = {};
+    if (idCol >= 0 && tab.getLastRow() > 1) {
+      var ids = tab.getRange(2, idCol + 1, tab.getLastRow() - 1, 1).getValues();
+      for (var i = 0; i < ids.length; i++) seen[String(ids[i][0])] = true;
+    }
+
+    var recorded = [];
+    var rows = data.chatRows || [];
+    for (var r = 0; r < rows.length; r++) {
+      var id = idCol >= 0 ? String(rows[r][idCol]) : "";
+      if (!(id && seen[id])) {
+        // Write every cell as plain text ("@" format) so a message starting
+        // with = + - @ is never run as a formula, and IDs/times stay exact.
+        var at = tab.getLastRow() + 1;
+        var range = tab.getRange(at, 1, 1, rows[r].length);
+        range.setNumberFormat("@");
+        range.setValues([rows[r].map(function (c) { return c == null ? "" : String(c); })]);
+        seen[id] = true;
+      }
+      if (id) recorded.push(id);
+    }
+    return json({ ok: true, recorded: recorded });
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 function json(o) {

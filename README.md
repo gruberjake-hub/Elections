@@ -271,6 +271,99 @@ Replace `Sheet1` with your first tab's actual name:
 - `Y1`: `Photos` · `Y2`: `=ARRAYFORMULA(IF(A2:A="","",COUNTIF(Media!A:A,A2:A)))`
 - `Z1`: `Record` · `Z2`: `=ARRAYFORMULA(IF(A2:A="","",HYPERLINK("https://web-trainstorm.onrender.com/r/"&A2:A,"Open")))`
 
+## Team chat (optional) — the Telegram group, mirrored into the Chat tab
+
+The team talks in a Telegram group. A bot sits in the group and copies every
+message, as it arrives, onto a **Chat** tab in the Google Sheet, next to the
+observations and photos. The app's Log tab gets a **💬 Team chat** button that
+opens the group.
+
+```
+Telegram group ──(each message)──> server  /api/chat-hook ──> Apps Script ──> "Chat" tab
+                                   (checks secret + group ID)
+```
+
+**The chat firewall.** Chat rows are communications: firsthand fact, hearsay,
+opinion and logistics, all mixed. They go on the Chat tab **only**, never on the
+observation sheet, and never to the drafter as fact. If someone sees something
+firsthand, they log it in the app too. A complaint cites the app entry.
+
+**What gets recorded:** text, captions, edits (each edit is a **new row**; the
+original row is never changed), replies and forwards (marked in `[brackets]`),
+joins and leaves, locations, and photos and files. **v1 records that a photo
+was posted, plus Telegram's file handle (`tg-file:...`), but not the photo
+itself.** Copying chat photos into R2 with a SHA-256 is the next layer.
+Telegram does **not** tell bots about deleted messages, so a message deleted
+after it was recorded stays on the Chat tab.
+
+### Setup (once)
+
+Do these **in order**. Steps 1 and 2 are the ones that commonly go wrong.
+
+1. **Create the bot.** In Telegram, message **@BotFather**: `/newbot`, then
+   pick a name and a username. It replies with a **token**. Treat it like a
+   password. Then send `/setprivacy`, pick the bot, and choose **Disable**.
+   (With privacy left on, the bot only sees /commands and @mentions, which
+   means almost nothing gets recorded.)
+2. **Create the group and add the bot.** Add the bot **after** you've
+   disabled privacy. If you added it before, remove it and add it again,
+   because the setting only applies to groups the bot joins afterwards. Make
+   any group-settings changes now, before you note the ID: Telegram sometimes
+   "upgrades" a group and gives it a **new chat ID**. (If that happens later,
+   the server logs a loud WARNING with the new ID.) Optional: once the bot is
+   in, set `/setjoingroups` → Disable in @BotFather so nobody else can add it
+   to their own groups.
+3. **Make an invite link.** Group → Invite links → create one. Turn on
+   **Request admin approval** so a leaked link doesn't let strangers in. This
+   becomes `TEAM_CHAT_URL`.
+4. **Local `.env`** (git-ignored): add `TELEGRAM_BOT_TOKEN=<token>`. Then:
+   ```
+   node tools/telegram-setup.js secret     # paste the output into .env
+   node tools/telegram-setup.js whoami     # must say "Reads ALL group messages: yes ✅"
+   ```
+   Post any message in the group, then:
+   ```
+   node tools/telegram-setup.js chats      # shows the group's chat ID (negative number)
+   ```
+5. **Load the Nov 3 group-text import first** (if you haven't yet). That
+   import uses File → Import → *Replace current sheet* on the Chat tab, so
+   running it **after** live capture starts would erase the Telegram rows.
+6. **Apps Script.** Paste the new `google-apps-script.gs`, Save, then
+   **Deploy → Manage deployments → ✏️ → Version: New version → Deploy.** A
+   plain Save does **not** update the live `/exec` URL.
+7. **Render → Environment:** add `TELEGRAM_WEBHOOK_SECRET` (same as `.env`),
+   `TELEGRAM_CHAT_IDS` (the group ID, minus sign included) and `TEAM_CHAT_URL`.
+   Don't add the bot token to Render; v1 doesn't need it there. Save and
+   redeploy. `/health` should then show `"chatCapture": true` and
+   `"teamChatButton": true`.
+8. **Point Telegram at the server:**
+   ```
+   node tools/telegram-setup.js set https://YOUR-APP.onrender.com
+   ```
+9. **Test** with a self-identifying message, e.g. `TEST-JAKE chat capture
+   11/05 9:14pm`. It should appear on the Chat tab within a few seconds. Edit
+   it, and a second row marked `[edit of ...]` should appear. Run
+   `node tools/telegram-setup.js info`. "Waiting to send" should be 0.
+10. **Tell the group** that the chat is kept as team records, and that
+    firsthand facts still go in the app.
+
+### How it stays reliable
+
+- **Nothing is lost on a hiccup.** The server only answers Telegram "OK"
+  after the Sheet confirms the row. Otherwise Telegram re-sends later, for
+  about 24 hours.
+- **No duplicates from re-sends.** Each row carries a Message ID
+  (`tg:<chat>:<message>`, and `:e<time>` for edits). The Apps Script skips any
+  ID it has already written.
+- **Only your group.** Messages from any chat not on `TELEGRAM_CHAT_IDS` are
+  dropped (and logged with their ID, which is handy during setup).
+- **Only Telegram.** Every delivery must carry the webhook secret.
+- **No formula injection.** Chat cells are written as plain text, so a message
+  starting with `=` can't run as a Sheet formula.
+- **The server must be reachable.** If Render is asleep or down, Telegram
+  holds messages and retries, but only for about a day. Keep the paid tier on
+  for election days (already the plan).
+
 ## Observer rules-check (optional) — "what do you think of this?"
 
 This gives observers a **Check the rules** box on the Log tab: they briefly
