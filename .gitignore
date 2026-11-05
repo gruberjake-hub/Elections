@@ -9,3 +9,7 @@ npm-debug.log*
 # OS junk
 .DS_Store
 Thumbs.db
+
+
+# Private working files (raw team messages, exports, backups) — NEVER commit
+private/
